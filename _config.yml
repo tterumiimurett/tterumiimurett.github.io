@@ -1,0 +1,5 @@
+title: Terumi's Blog
+description: "Random Notes on ML, Math, and Science"
+theme: jekyll-theme-cayman
+markdown: kramdown
+highlighter: rouge
