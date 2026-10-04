@@ -30,20 +30,20 @@
       vec2 direction = velocity / max(length(velocity), 0.001);
       vec2 normal = vec2(-direction.y, direction.x);
       float side = dot(delta, normal) / max(distance, 1.0);
-      vec2 displacement = (direction + normal * side * 0.55) * weight * speed * 24.0;
+      vec2 displacement = (direction + normal * side * 0.55) * weight * speed * 10.0;
       float crest = sin(distance * 0.045 - clock * 6.0);
-      displacement += delta / max(distance, 1.0) * crest * weight * energy * 3.5;
+      displacement += delta / max(distance, 1.0) * crest * weight * energy * 1.6;
       float age = clock - tap.z;
       if (age >= 0.0 && age < 3.0) {
         vec2 tapDelta = position - tap.xy;
         float tapDistance = length(tapDelta);
         float front = tapDistance - age * 150.0;
         float envelope = exp(-pow(front / 65.0, 2.0)) * exp(-age * 1.5);
-        displacement += tapDelta / max(tapDistance, 1.0) * sin(front * 0.045) * envelope * 5.0;
+        displacement += tapDelta / max(tapDistance, 1.0) * sin(front * 0.045) * envelope * 2.0;
       }
       vec2 screen = (position + displacement) / resolution;
       gl_Position = vec4(screen.x * 2.0 - 1.0, 1.0 - screen.y * 2.0, 0.0, 1.0);
-      brightness = clamp(tone * 1.12 + weight * speed * 0.10, 0.0, 1.0);
+      brightness = clamp(tone * 1.12 + weight * speed * 0.035, 0.0, 1.0);
       gl_PointSize = spacing * (0.36 + 0.48 * sqrt(tone)) * pixelRatio;
     }
   `;
