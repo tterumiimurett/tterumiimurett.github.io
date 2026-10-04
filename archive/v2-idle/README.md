@@ -17,8 +17,4 @@ The source photograph is unchanged. Motion OFF and reduced-motion preferences us
 
 Berkeley course projects are excluded; the exchange education entry remains. proactive FD-benchmark stays unpublished. No email address or resume download is published.
 
-Typography experiment: headings use Smiley Sans (得意黑) v2.0.1 from https://github.com/atelier-anchor/smiley-sans. The unmodified official WOFF2 file is self-hosted in fonts/, with its SIL Open Font License in fonts/OFL.txt. Its built-in slant is preserved; synthetic bold and italic are disabled for headings. Manrope body text and IBM Plex Mono labels retain readability and load from Google Fonts with local fallbacks. Wave and pointer behavior are unchanged.
-
-The pre-font-change V2 snapshot, including its interactive and idle waves, is preserved at https://tterumiimurett.github.io/archive/v2-idle/. The ORIGINAL links open this snapshot for comparison. A full local copy and ZIP are stored alongside this project as personal-site-v2-idle-2026-10-04.
-
-Plain HTML/CSS/JavaScript, compatible with GitHub Pages.
+Fonts load from Google Fonts with local fallbacks. Plain HTML/CSS/JavaScript, compatible with GitHub Pages.
