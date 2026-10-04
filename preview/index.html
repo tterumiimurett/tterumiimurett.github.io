@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Terumi Chiba — research, projects, and notes on speech, language, and intelligent systems.">
+  <title>Terumi Chiba · Research & Notes</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="content.js" defer></script>
+  <script src="site.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="header wrap"><a class="brand" href="#">tc<span> / personal index</span></a><nav aria-label="Main navigation"><a href="#about">About</a><a href="#research">Research</a><a href="#notes">Notes</a><a href="https://github.com/tterumiimurett">GitHub ↗</a></nav></header>
+  <main id="main" class="wrap">
+    <section class="hero" id="about"><div class="hero-copy"><p class="eyebrow">RESEARCH / PROJECTS / FIELD NOTES</p><h1 id="name"></h1><p class="headline" id="headline"></p><p class="bio" id="bio"></p><div class="hero-links"><a class="button" href="#research">Explore my work <span>↗</span></a><a id="contact" hidden>Get in touch ↗</a></div></div><aside class="portrait"><div class="portrait-art" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="orbit orbit-three"></span><span class="core"></span><span class="art-label">LISTEN.<br>UNDERSTAND.<br>EXPLORE.</span><span class="art-index">FIG. 01 — CONNECTIONS</span></div><img id="portrait" alt="" hidden><p>A space for work, ideas, and things in progress.</p></aside></section>
+    <div class="interest-strip"><span class="eyebrow">AREAS OF INTEREST</span><div id="interests"></div></div>
+    <section class="section" id="research"><div class="section-heading"><div><p class="eyebrow">01 / SELECTED WORK</p><h2>Research & projects<span>.</span></h2></div><p>From questions to experiments.</p></div><div id="papers"></div></section>
+    <section class="section notes-section" id="notes"><div class="section-heading"><div><p class="eyebrow">02 / NOTEBOOK</p><h2>Thinking out loud<span>.</span></h2></div><p>Random notes on ML, math, and science.</p></div><div id="posts"></div></section>
+    <section class="closing"><p class="eyebrow">ALWAYS A WORK IN PROGRESS</p><h2>More questions.<br>More things to build.</h2><a href="https://github.com/tterumiimurett">Find me on GitHub ↗</a></section>
+  </main>
+  <footer class="wrap"><span>© <span id="year"></span> <span id="footer-name"></span></span><span>Research & notes</span><a href="#">Back to top ↑</a></footer>
+  <button id="edit-button" class="edit-button" hidden>编辑内容 ↗</button>
+  <dialog id="editor"><form id="edit-form"><div class="editor-heading"><h2>填写你的主页</h2><button type="button" id="close-editor" aria-label="关闭">×</button></div><p>修改后预览。下载内容文件可保存这次修改；重新打开网页会读取原文件。</p><label>显示姓名<input name="name" required></label><label>首页一句话<textarea name="headline" rows="2" required></textarea></label><label>个人介绍<textarea name="bio" rows="4"></textarea></label><label>头像路径或 HTTPS 地址<input name="portrait" placeholder="例如 portrait.jpg"></label><label>公开联系邮箱（可留空）<input name="email" type="email"></label><label>研究兴趣（逗号分隔）<input name="interests"></label><label class="check"><input name="showUpcoming" type="checkbox">展示 proactive FD-benchmark（Coming soon）</label><p class="editor-tip">论文和博客在 content.js 中填写。尚未完成的内容可以用 published: false 隐藏。</p><div class="editor-actions"><button class="button" type="submit">应用预览</button><button type="button" id="download">下载 content.js</button></div><p id="edit-status" role="status"></p></form></dialog>
+  <noscript><p class="wrap">Please enable JavaScript to display the editable portfolio content. <a href="https://arxiv.org/abs/2609.38867">Read Talk2Agent</a> · <a href="https://arxiv.org/abs/2605.10027">Read crisis assessment research</a>.</p></noscript>
+</body>
+</html>
