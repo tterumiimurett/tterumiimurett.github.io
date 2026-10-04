@@ -11,6 +11,7 @@
   const vertexSource = `
     attribute vec2 position;
     attribute float tone;
+    attribute float seed;
     uniform vec2 resolution;
     uniform float clock;
     uniform float pixelRatio;
@@ -18,38 +19,28 @@
     uniform vec2 cursor;
     uniform float energy;
     uniform float presence;
-    uniform float fieldStrength;
-    uniform float hoverStrength;
-    uniform float hoverTime;
     uniform vec2 velocity;
-    uniform vec2 turn;
     varying float brightness;
     varying float visibility;
+    varying float glow;
     void main() {
+      float scale = spacing / 8.0;
       vec2 delta = position - cursor;
       float distance = length(delta);
       vec2 outward = delta / max(distance, 1.0);
-      float radius = min(resolution.x * 0.28, 125.0);
-      float speed = length(velocity);
-      float momentum = 1.0 - exp(-speed / 550.0);
-      vec2 direction = velocity / max(speed, 0.001);
-      vec2 flow = direction * momentum;
-      float along = dot(delta, direction);
-      float tail = 1.0 - smoothstep(-radius * 1.5, radius * 0.4, along);
-      vec2 bend = turn / max(650.0, length(turn));
-      vec2 warped = delta - direction * along * momentum * (0.30 + tail * 0.35);
-      warped += direction * radius * momentum * 0.12;
-      warped -= bend * radius * tail * tail * 0.65;
-      float ringDistance = length(warped);
-      vec2 fieldNormal = warped / max(ringDistance, 1.0);
-      float influence = exp(-pow(ringDistance / radius, 2.0)) * presence * fieldStrength;
-      float field = influence * smoothstep(0.0, 24.0, distance);
-      float fieldRings = sin(ringDistance / radius * 6.5 - 0.8);
-      vec2 displacement = (fieldNormal * (2.0 + fieldRings * 4.0) + flow * 9.0 + bend * tail * 5.0) * field;
-      float front = hoverTime * 65.0;
-      float waveEnvelope = exp(-distance / 160.0) * smoothstep(0.0, 20.0, distance) * (1.0 - smoothstep(front - 28.0, front + 28.0, distance));
-      float hoverWave = sin(distance * 0.052 - hoverTime * 3.38) * waveEnvelope * hoverStrength * presence;
-      displacement += outward * hoverWave * 2.4;
+      float radius = (190.0 + energy * 140.0) * scale;
+      float influence = (1.0 - smoothstep(radius * 0.05, radius, distance)) * presence;
+      float speed = length(velocity) * 0.0015;
+      vec2 direction = velocity / max(length(velocity), 0.001);
+      vec2 across = vec2(-direction.y, direction.x);
+      float side = clamp(dot(outward, across), -1.0, 1.0);
+      vec2 transport = direction * 1.15 + across * side * 0.85;
+      float travel = min(speed, 1.4) * (26.0 + seed * 10.0) * scale;
+      float crest = sin(distance / scale * 0.05 - clock * 8.0);
+      vec2 displacement = transport * influence * travel;
+      displacement += outward * influence * crest * (0.25 + energy * 0.75) * 7.0 * scale;
+      float highlight = 0.2 + min(speed, 1.2) * 0.55 + (crest * 0.5 + 0.5) * 0.25;
+      glow = clamp(influence * highlight * (0.35 + energy * 0.65), 0.0, 1.0);
       vec2 idleOffset = position - resolution * vec2(0.56, 0.48);
       float idleDistance = length(idleOffset);
       float idleWave = sin(idleDistance * 0.033 - clock * 1.1);
@@ -59,24 +50,28 @@
       gl_Position = vec4(screen.x * 2.0 - 1.0, 1.0 - screen.y * 2.0, 0.0, 1.0);
       float fine = 1.0 - smoothstep(0.08, 0.40, tone);
       float ambientReveal = smoothstep(-0.25, 0.45, idleWave * 0.65 + idleSecondary * 0.35);
-      float cursorReveal = smoothstep(0.02, 0.45, influence);
+      float cursorReveal = smoothstep(0.02, 0.45, glow);
       float fineReveal = mix(ambientReveal, 1.0, cursorReveal);
       visibility = mix(1.0, fineReveal, fine);
-      float sizeWave = idleWave * 0.035 + idleSecondary * 0.02 + fieldRings * field * 0.065 + hoverWave * 0.045 + fine * cursorReveal * 0.04;
-      float dotSize = clamp(0.16 + 0.73 * pow(tone, 0.85) + sizeWave, 0.12, 0.98);
-      brightness = clamp(tone * 1.12 + field * (0.025 + fieldRings * 0.035) + hoverWave * 0.035 + idleWave * 0.016, 0.0, 1.0);
-      brightness = mix(brightness, max(brightness, 0.22 + cursorReveal * 0.10), fine);
-      gl_PointSize = spacing * dotSize * pixelRatio;
+      float lit = pow(tone, 0.42);
+      float waveBand = (ambientReveal * 2.0 - 1.0) * (1.0 - lit * 0.7);
+      float raised = smoothstep(0.05, 0.13, lit);
+      glow = min(1.0, glow + raised * 0.072);
+      float diameter = max(0.7, 1.4 + lit * 3.5 + raised * 0.6 + glow * 1.3 + waveBand * 1.15) * scale;
+      brightness = clamp((0.24 + lit * 0.76) * (1.0 + waveBand * 0.42) + glow * 0.75, 0.0, 1.0);
+      gl_PointSize = diameter * pixelRatio;
     }
   `;
   const fragmentSource = `
     precision mediump float;
     varying float brightness;
     varying float visibility;
+    varying float glow;
     void main() {
       float distance = length(gl_PointCoord - 0.5);
-      float opacity = 1.0 - smoothstep(0.35, 0.5, distance);
-      gl_FragColor = vec4(vec3(0.93, 0.93, 0.90) * brightness, opacity * visibility);
+      float core = 1.0 - smoothstep(0.05, 0.5, distance);
+      float opacity = core * brightness;
+      gl_FragColor = vec4(vec3(0.93, 0.93, 0.90), opacity * visibility);
     }
   `;
 
@@ -109,30 +104,170 @@
   graphics.bindBuffer(graphics.ARRAY_BUFFER, buffer);
   const position = graphics.getAttribLocation(program, 'position');
   const tone = graphics.getAttribLocation(program, 'tone');
+  const seed = graphics.getAttribLocation(program, 'seed');
   graphics.enableVertexAttribArray(position);
   graphics.enableVertexAttribArray(tone);
-  graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 12, 0);
-  graphics.vertexAttribPointer(tone, 1, graphics.FLOAT, false, 12, 8);
+  graphics.enableVertexAttribArray(seed);
+  graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 16, 0);
+  graphics.vertexAttribPointer(tone, 1, graphics.FLOAT, false, 16, 8);
+  graphics.vertexAttribPointer(seed, 1, graphics.FLOAT, false, 16, 12);
   graphics.enable(graphics.BLEND);
   graphics.blendFunc(graphics.SRC_ALPHA, graphics.ONE_MINUS_SRC_ALPHA);
   graphics.clearColor(0.067, 0.071, 0.063, 1);
-  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'fieldStrength', 'hoverStrength', 'hoverTime', 'velocity', 'turn'].map((name) => [name, graphics.getUniformLocation(program, name)]));
+  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'velocity'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
   const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, sampleTime: null, sampleInterval: 16.7, inputVelocityX: 0, inputVelocityY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
   let pointCount = 0;
   let elapsed = 0;
-  let stationaryTime = 0;
-  let fieldStrength = 0;
-  let hoverStrength = 0;
-  let hoverTime = 0;
-  let wasResting = false;
-  let historyVelocityX = 0;
-  let historyVelocityY = 0;
   let previousFrame = 0;
   let frameId = 0;
   let ready = false;
   let visible = true;
   let lost = false;
+  let glowRenderer = null;
+  try { glowRenderer = createGlowRenderer(); } catch {}
+
+  function createGlowRenderer() {
+    const screenVertex = `
+      attribute vec2 corner;
+      varying vec2 uv;
+      void main() {
+        uv = corner * 0.5 + 0.5;
+        gl_Position = vec4(corner, 0.0, 1.0);
+      }
+    `;
+    const screenFragment = `
+      precision mediump float;
+      uniform sampler2D source;
+      uniform sampler2D bloom;
+      uniform vec2 stepSize;
+      uniform int pass;
+      varying vec2 uv;
+      void main() {
+        vec3 color = texture2D(source, uv).rgb;
+        if (pass == 0) {
+          float peak = max(color.r, max(color.g, color.b));
+          color *= smoothstep(0.48, 0.73, peak);
+        } else if (pass == 1) {
+          color *= 0.227027;
+          color += (texture2D(source, uv + stepSize * 1.384615).rgb + texture2D(source, uv - stepSize * 1.384615).rgb) * 0.316216;
+          color += (texture2D(source, uv + stepSize * 3.230769).rgb + texture2D(source, uv - stepSize * 3.230769).rgb) * 0.070270;
+        } else {
+          color += texture2D(bloom, uv).rgb * 0.55;
+          color = pow(max(color, vec3(0.0)), vec3(1.0 / 2.2));
+        }
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+    const screenProgram = graphics.createProgram();
+    const vertex = compileShader(graphics.VERTEX_SHADER, screenVertex);
+    const fragment = compileShader(graphics.FRAGMENT_SHADER, screenFragment);
+    graphics.attachShader(screenProgram, vertex);
+    graphics.attachShader(screenProgram, fragment);
+    graphics.bindAttribLocation(screenProgram, 0, 'corner');
+    graphics.linkProgram(screenProgram);
+    graphics.deleteShader(vertex);
+    graphics.deleteShader(fragment);
+    if (!graphics.getProgramParameter(screenProgram, graphics.LINK_STATUS)) {
+      graphics.deleteProgram(screenProgram);
+      throw new Error('Portrait glow unavailable');
+    }
+    const screenBuffer = graphics.createBuffer();
+    graphics.bindBuffer(graphics.ARRAY_BUFFER, screenBuffer);
+    graphics.bufferData(graphics.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), graphics.STATIC_DRAW);
+    const settings = Object.fromEntries(['source', 'bloom', 'stepSize', 'pass'].map((name) => [name, graphics.getUniformLocation(screenProgram, name)]));
+    let targets = [];
+
+    function clearTargets() {
+      for (const target of targets) {
+        graphics.deleteFramebuffer(target.framebuffer);
+        graphics.deleteTexture(target.texture);
+      }
+      targets = [];
+    }
+
+    function resize(width, height) {
+      clearTargets();
+      try {
+        for (const divisor of [1, 2, 2]) {
+          const target = { width: Math.max(1, Math.round(width / divisor)), height: Math.max(1, Math.round(height / divisor)), texture: graphics.createTexture(), framebuffer: graphics.createFramebuffer() };
+          targets.push(target);
+          graphics.bindTexture(graphics.TEXTURE_2D, target.texture);
+          graphics.texParameteri(graphics.TEXTURE_2D, graphics.TEXTURE_MIN_FILTER, graphics.LINEAR);
+          graphics.texParameteri(graphics.TEXTURE_2D, graphics.TEXTURE_MAG_FILTER, graphics.LINEAR);
+          graphics.texParameteri(graphics.TEXTURE_2D, graphics.TEXTURE_WRAP_S, graphics.CLAMP_TO_EDGE);
+          graphics.texParameteri(graphics.TEXTURE_2D, graphics.TEXTURE_WRAP_T, graphics.CLAMP_TO_EDGE);
+          graphics.texImage2D(graphics.TEXTURE_2D, 0, graphics.RGBA, target.width, target.height, 0, graphics.RGBA, graphics.UNSIGNED_BYTE, null);
+          graphics.bindFramebuffer(graphics.FRAMEBUFFER, target.framebuffer);
+          graphics.framebufferTexture2D(graphics.FRAMEBUFFER, graphics.COLOR_ATTACHMENT0, graphics.TEXTURE_2D, target.texture, 0);
+          if (graphics.checkFramebufferStatus(graphics.FRAMEBUFFER) !== graphics.FRAMEBUFFER_COMPLETE) throw new Error('Portrait glow target unavailable');
+        }
+      } catch (error) {
+        clearTargets();
+        throw error;
+      } finally {
+        graphics.bindFramebuffer(graphics.FRAMEBUFFER, null);
+      }
+    }
+
+    function pass(source, target, mode, horizontal = 0, vertical = 0) {
+      graphics.bindFramebuffer(graphics.FRAMEBUFFER, target?.framebuffer || null);
+      graphics.viewport(0, 0, target?.width || canvas.width, target?.height || canvas.height);
+      graphics.activeTexture(graphics.TEXTURE0);
+      graphics.bindTexture(graphics.TEXTURE_2D, source.texture);
+      graphics.uniform1i(settings.source, 0);
+      graphics.uniform1i(settings.pass, mode);
+      graphics.uniform2f(settings.stepSize, horizontal, vertical);
+      graphics.drawArrays(graphics.TRIANGLE_STRIP, 0, 4);
+    }
+
+    function draw() {
+      const [scene, first, second] = targets;
+      graphics.bindFramebuffer(graphics.FRAMEBUFFER, scene.framebuffer);
+      graphics.viewport(0, 0, scene.width, scene.height);
+      drawParticles(true);
+      graphics.disable(graphics.BLEND);
+      graphics.useProgram(screenProgram);
+      graphics.disableVertexAttribArray(position);
+      graphics.disableVertexAttribArray(tone);
+      graphics.disableVertexAttribArray(seed);
+      graphics.enableVertexAttribArray(0);
+      graphics.bindBuffer(graphics.ARRAY_BUFFER, screenBuffer);
+      graphics.vertexAttribPointer(0, 2, graphics.FLOAT, false, 0, 0);
+      graphics.activeTexture(graphics.TEXTURE1);
+      graphics.bindTexture(graphics.TEXTURE_2D, scene.texture);
+      pass(scene, first, 0);
+      pass(first, second, 1, 1.5 / first.width, 0);
+      pass(second, first, 1, 0, 1.5 / second.height);
+      graphics.activeTexture(graphics.TEXTURE1);
+      graphics.bindTexture(graphics.TEXTURE_2D, first.texture);
+      graphics.uniform1i(settings.bloom, 1);
+      pass(scene, null, 2);
+    }
+
+    function dispose() {
+      clearTargets();
+      graphics.deleteBuffer(screenBuffer);
+      graphics.deleteProgram(screenProgram);
+    }
+
+    return { resize, draw, dispose };
+  }
+
+  function drawParticles(linear) {
+    graphics.useProgram(program);
+    graphics.bindBuffer(graphics.ARRAY_BUFFER, buffer);
+    graphics.enableVertexAttribArray(position);
+    graphics.enableVertexAttribArray(tone);
+    graphics.enableVertexAttribArray(seed);
+    graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 16, 0);
+    graphics.vertexAttribPointer(tone, 1, graphics.FLOAT, false, 16, 8);
+    graphics.vertexAttribPointer(seed, 1, graphics.FLOAT, false, 16, 12);
+    graphics.enable(graphics.BLEND);
+    graphics.clearColor(linear ? 0.0026 : 0.067, linear ? 0.003 : 0.071, linear ? 0.0023 : 0.063, 1);
+    graphics.clear(graphics.COLOR_BUFFER_BIT);
+    graphics.drawArrays(graphics.POINTS, 0, pointCount);
+  }
 
   function enabled() {
     return ready && visible && !lost && !document.hidden && !document.documentElement.classList.contains('motion-off');
@@ -143,6 +278,8 @@
     const height = portrait.offsetHeight;
     if (lost || portrait.hidden || !width || !height || !portrait.naturalWidth) return;
     try {
+      graphics.useProgram(program);
+      graphics.bindBuffer(graphics.ARRAY_BUFFER, buffer);
       const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.style.left = `${portrait.offsetLeft}px`;
       canvas.style.top = `${portrait.offsetTop}px`;
@@ -150,6 +287,10 @@
       canvas.style.height = `${height}px`;
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
+      if (glowRenderer) {
+        try { glowRenderer.resize(canvas.width, canvas.height); }
+        catch { glowRenderer.dispose(); glowRenderer = null; }
+      }
       graphics.viewport(0, 0, canvas.width, canvas.height);
       graphics.uniform2f(uniforms.resolution, width, height);
       graphics.uniform1f(uniforms.pixelRatio, ratio);
@@ -164,12 +305,13 @@
       const context = sampler.getContext('2d', { willReadFrequently: true });
       context.drawImage(portrait, (width - portrait.naturalWidth * scale) * alignment[0] / spacing, (height - portrait.naturalHeight * scale) * alignment[1] / spacing, portrait.naturalWidth * scale / spacing, portrait.naturalHeight * scale / spacing);
       const pixels = context.getImageData(0, 0, columns, rows).data;
-      const points = new Float32Array(columns * rows * 3);
+      const points = new Float32Array(columns * rows * 4);
       for (let row = 0; row < rows; row++) {
         for (let column = 0; column < columns; column++) {
           const index = row * columns + column;
           const luminance = (pixels[index * 4] * 0.299 + pixels[index * 4 + 1] * 0.587 + pixels[index * 4 + 2] * 0.114) / 255;
-          points.set([(column + 0.5) * spacing, (row + 0.5) * spacing, Math.min(1, Math.max(0, luminance * 1.1))], index * 3);
+          const seed = ((Math.imul(column + 1, 73856093) ^ Math.imul(row + 1, 19349663)) >>> 0) / 4294967296;
+          points.set([(column + 0.5) * spacing, (row + 0.5) * spacing, Math.min(1, Math.max(0, luminance * 1.1)), seed], index * 4);
         }
       }
       pointCount = columns * rows;
@@ -184,39 +326,25 @@
     const delta = previousFrame ? Math.min((timestamp - previousFrame) / 1000, 0.05) : 1 / 60;
     elapsed += delta;
     previousFrame = timestamp;
-    const follow = 1 - Math.exp(-14 * delta);
+    const follow = 1 - Math.exp(-5 * delta);
     pointer.trailX += (pointer.targetX - pointer.trailX) * follow;
     pointer.trailY += (pointer.targetY - pointer.trailY) * follow;
     pointer.presence += ((pointer.active ? 1 : 0) - pointer.presence) * (1 - Math.exp(-(pointer.active ? 8 : 3) * delta));
     const moving = pointer.active && pointer.sampleTime !== null && timestamp - pointer.sampleTime < Math.min(100, Math.max(50, pointer.sampleInterval * 2));
     const inputSpeed = Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY);
-    const inMotion = moving && inputSpeed > 6;
-    stationaryTime = !pointer.active || inMotion ? 0 : stationaryTime + delta;
-    const resting = pointer.active && stationaryTime > 0.25;
-    fieldStrength += ((inMotion ? 1 : 0) - fieldStrength) * (1 - Math.exp(-(inMotion ? 14 : 2.8) * delta));
-    hoverStrength += ((resting ? 1 : 0) - hoverStrength) * (1 - Math.exp(-(resting ? 4 : 12) * delta));
-    if (resting && !wasResting) hoverTime = 0;
-    if (resting || hoverStrength > 0.001) hoverTime += delta;
-    wasResting = resting;
-    const momentum = 1 - Math.exp(-(moving ? 10 : 1.4) * delta);
+    const momentum = 1 - Math.exp(-(moving ? 10 : 1.1) * delta);
     pointer.velocityX += ((moving ? pointer.inputVelocityX : 0) - pointer.velocityX) * momentum;
     pointer.velocityY += ((moving ? pointer.inputVelocityY : 0) - pointer.velocityY) * momentum;
-    const historyFollow = 1 - Math.exp(-3.2 * delta);
-    historyVelocityX += (pointer.velocityX - historyVelocityX) * historyFollow;
-    historyVelocityY += (pointer.velocityY - historyVelocityY) * historyFollow;
-    const targetEnergy = moving ? Math.min(1, Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) / 650) : 0;
-    pointer.energy += (targetEnergy - pointer.energy) * (1 - Math.exp(-(moving ? 8 : 2.2) * delta));
+    const energyDecay = Math.exp(-2 * delta);
+    pointer.energy = Math.min(1, pointer.energy * energyDecay + (moving ? inputSpeed * 0.003 * (1 - energyDecay) : 0));
+    graphics.useProgram(program);
     graphics.uniform1f(uniforms.clock, elapsed);
     graphics.uniform2f(uniforms.cursor, pointer.trailX, pointer.trailY);
     graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
-    graphics.uniform2f(uniforms.turn, pointer.velocityX - historyVelocityX, pointer.velocityY - historyVelocityY);
     graphics.uniform1f(uniforms.energy, pointer.energy);
     graphics.uniform1f(uniforms.presence, pointer.presence);
-    graphics.uniform1f(uniforms.fieldStrength, fieldStrength);
-    graphics.uniform1f(uniforms.hoverStrength, hoverStrength);
-    graphics.uniform1f(uniforms.hoverTime, hoverTime);
-    graphics.clear(graphics.COLOR_BUFFER_BIT);
-    graphics.drawArrays(graphics.POINTS, 0, pointCount);
+    if (glowRenderer) glowRenderer.draw();
+    else drawParticles(false);
     frameId = requestAnimationFrame(draw);
   }
 
@@ -224,9 +352,6 @@
     if (frameId) cancelAnimationFrame(frameId);
     frameId = 0;
     previousFrame = 0;
-    stationaryTime = fieldStrength = hoverStrength = hoverTime = 0;
-    wasResting = false;
-    historyVelocityX = historyVelocityY = 0;
     pointer.active = false;
     pointer.sampleTime = null;
     pointer.energy = pointer.presence = pointer.velocityX = pointer.velocityY = pointer.inputVelocityX = pointer.inputVelocityY = 0;
@@ -288,7 +413,6 @@
   surface.addEventListener('pointerdown', (event) => {
     if (!enabled() || event.target.closest('a, button, input')) return;
     movePointer(event);
-    stationaryTime = 0;
   }, { passive: true });
   surface.addEventListener('pointerleave', () => { pointer.active = false; });
   surface.addEventListener('pointercancel', () => { pointer.active = false; });
