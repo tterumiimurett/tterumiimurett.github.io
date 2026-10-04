@@ -16,48 +16,31 @@
     uniform float pixelRatio;
     uniform float spacing;
     uniform vec2 cursor;
-    uniform vec2 velocity;
     uniform float energy;
     uniform float presence;
-    uniform float idleStrength;
-    uniform vec4 ripples[8];
+    uniform float fieldStrength;
+    uniform float hoverStrength;
+    uniform float hoverTime;
     varying float brightness;
     void main() {
       vec2 delta = position - cursor;
       float distance = length(delta);
-      float radius = min(resolution.x * 0.46, 180.0 + energy * 100.0);
-      float weight = (1.0 - smoothstep(0.0, radius, distance)) * presence;
-      float speed = min(length(velocity) / 700.0, 1.0);
-      vec2 direction = velocity / max(length(velocity), 0.001);
-      vec2 normal = vec2(-direction.y, direction.x);
-      float side = dot(delta, normal) / max(distance, 1.0);
-      vec2 displacement = (direction + normal * side * 0.55) * weight * speed * 10.0;
-      float crest = sin(distance * 0.045 - clock * 6.0);
-      displacement += delta / max(distance, 1.0) * crest * weight * energy * 1.6;
-      vec2 water = vec2(0.0);
-      float waterLight = 0.0;
-      for (int index = 0; index < 8; index++) {
-        float age = clock - ripples[index].z;
-        if (age >= 0.0 && age < 2.4 && ripples[index].w > 0.0) {
-          vec2 offset = position - ripples[index].xy;
-          float radius = length(offset);
-          float front = radius - age * 120.0;
-          float envelope = exp(-pow(front / 55.0, 2.0));
-          float life = smoothstep(0.0, 0.18, age) * (1.0 - smoothstep(0.8, 2.4, age));
-          float wave = sin(front * 0.065) * envelope * life * ripples[index].w;
-          water += offset / max(radius, 1.0) * wave * 7.0;
-          waterLight += wave * 0.10;
-        }
-      }
-      displacement += water / max(1.0, length(water) / 10.0);
+      vec2 outward = delta / max(distance, 1.0);
+      float radius = min(resolution.x * 0.28, 90.0 + energy * 45.0);
+      float field = exp(-pow(distance / radius, 2.0)) * smoothstep(0.0, 16.0, distance) * presence * fieldStrength;
+      vec2 displacement = outward * field * (20.0 + energy * 12.0);
+      float front = hoverTime * 95.0;
+      float waveEnvelope = exp(-distance / 160.0) * smoothstep(0.0, 20.0, distance) * (1.0 - smoothstep(front - 28.0, front + 28.0, distance));
+      float hoverWave = sin(distance * 0.065 - hoverTime * 6.175) * waveEnvelope * hoverStrength * presence;
+      displacement += outward * hoverWave * 6.0;
       vec2 idleOffset = position - resolution * vec2(0.56, 0.48);
       float idleDistance = length(idleOffset);
       float idleWave = sin(idleDistance * 0.033 - clock * 1.1);
       float idleSecondary = sin(position.y * 0.024 + position.x * 0.012 - clock * 0.8);
-      displacement += (idleOffset / max(idleDistance, 1.0) * idleWave * 1.4 + vec2(0.4, 0.7) * idleSecondary * 0.65) * idleStrength;
+      displacement += idleOffset / max(idleDistance, 1.0) * idleWave * 1.4 + vec2(0.4, 0.7) * idleSecondary * 0.65;
       vec2 screen = (position + displacement) / resolution;
       gl_Position = vec4(screen.x * 2.0 - 1.0, 1.0 - screen.y * 2.0, 0.0, 1.0);
-      brightness = clamp(tone * 1.12 + weight * speed * 0.035 + clamp(waterLight, -0.10, 0.10) + idleWave * idleStrength * 0.016, 0.0, 1.0);
+      brightness = clamp(tone * 1.12 + field * 0.055 + hoverWave * 0.10 + idleWave * 0.016, 0.0, 1.0);
       gl_PointSize = spacing * (0.36 + 0.48 * sqrt(tone)) * pixelRatio;
     }
   `;
@@ -107,18 +90,16 @@
   graphics.enable(graphics.BLEND);
   graphics.blendFunc(graphics.SRC_ALPHA, graphics.ONE_MINUS_SRC_ALPHA);
   graphics.clearColor(0.067, 0.071, 0.063, 1);
-  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'velocity', 'energy', 'presence', 'idleStrength', 'ripples[0]'].map((name) => [name, graphics.getUniformLocation(program, name)]));
+  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'fieldStrength', 'hoverStrength', 'hoverTime'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
   const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, sampleTime: null, sampleInterval: 16.7, inputVelocityX: 0, inputVelocityY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
-  const ripples = new Float32Array(32);
-  let rippleIndex = 0;
-  let lastRippleTime = -10;
-  let lastRippleX = 0;
-  let lastRippleY = 0;
   let pointCount = 0;
   let elapsed = 0;
-  let idleTime = 0;
-  let idleStrength = 0;
+  let stationaryTime = 0;
+  let fieldStrength = 0;
+  let hoverStrength = 0;
+  let hoverTime = 0;
+  let wasResting = false;
   let previousFrame = 0;
   let frameId = 0;
   let ready = false;
@@ -175,29 +156,32 @@
     const delta = previousFrame ? Math.min((timestamp - previousFrame) / 1000, 0.05) : 1 / 60;
     elapsed += delta;
     previousFrame = timestamp;
-    const follow = 1 - Math.exp(-5.5 * delta);
+    const follow = 1 - Math.exp(-14 * delta);
     pointer.trailX += (pointer.targetX - pointer.trailX) * follow;
     pointer.trailY += (pointer.targetY - pointer.trailY) * follow;
     pointer.presence += ((pointer.active ? 1 : 0) - pointer.presence) * (1 - Math.exp(-(pointer.active ? 8 : 3) * delta));
     const moving = pointer.active && pointer.sampleTime !== null && timestamp - pointer.sampleTime < Math.min(100, Math.max(50, pointer.sampleInterval * 2));
-    idleTime = moving && Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) > 3 ? 0 : idleTime + delta;
-    const idleTarget = idleTime > 1.2 ? 1 : 0;
-    idleStrength += (idleTarget - idleStrength) * (1 - Math.exp(-(idleTarget ? 1.2 : 5) * delta));
+    const inputSpeed = Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY);
+    const inMotion = moving && inputSpeed > 6;
+    stationaryTime = !pointer.active || inMotion ? 0 : stationaryTime + delta;
+    const resting = pointer.active && stationaryTime > 0.25;
+    fieldStrength += ((inMotion ? 1 : 0) - fieldStrength) * (1 - Math.exp(-(inMotion ? 14 : 5) * delta));
+    hoverStrength += ((resting ? 1 : 0) - hoverStrength) * (1 - Math.exp(-(resting ? 4 : 12) * delta));
+    if (resting && !wasResting) hoverTime = 0;
+    if (resting || hoverStrength > 0.001) hoverTime += delta;
+    wasResting = resting;
     const momentum = 1 - Math.exp(-(moving ? 10 : 1.4) * delta);
     pointer.velocityX += ((moving ? pointer.inputVelocityX : 0) - pointer.velocityX) * momentum;
     pointer.velocityY += ((moving ? pointer.inputVelocityY : 0) - pointer.velocityY) * momentum;
     const targetEnergy = moving ? Math.min(1, Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) / 650) : 0;
     pointer.energy += (targetEnergy - pointer.energy) * (1 - Math.exp(-(moving ? 8 : 2.2) * delta));
-    if (moving && Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) > 25 && elapsed - lastRippleTime >= 0.32 && (elapsed - lastRippleTime > 2.4 || Math.hypot(pointer.trailX - lastRippleX, pointer.trailY - lastRippleY) > 45)) {
-      addRipple(pointer.trailX, pointer.trailY, 0.85);
-    }
     graphics.uniform1f(uniforms.clock, elapsed);
     graphics.uniform2f(uniforms.cursor, pointer.trailX, pointer.trailY);
-    graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
     graphics.uniform1f(uniforms.energy, pointer.energy);
     graphics.uniform1f(uniforms.presence, pointer.presence);
-    graphics.uniform1f(uniforms.idleStrength, idleStrength);
-    graphics.uniform4fv(uniforms['ripples[0]'], ripples);
+    graphics.uniform1f(uniforms.fieldStrength, fieldStrength);
+    graphics.uniform1f(uniforms.hoverStrength, hoverStrength);
+    graphics.uniform1f(uniforms.hoverTime, hoverTime);
     graphics.clear(graphics.COLOR_BUFFER_BIT);
     graphics.drawArrays(graphics.POINTS, 0, pointCount);
     frameId = requestAnimationFrame(draw);
@@ -207,9 +191,8 @@
     if (frameId) cancelAnimationFrame(frameId);
     frameId = 0;
     previousFrame = 0;
-    idleTime = idleStrength = 0;
-    ripples.fill(0);
-    lastRippleTime = -10;
+    stationaryTime = fieldStrength = hoverStrength = hoverTime = 0;
+    wasResting = false;
     pointer.active = false;
     pointer.sampleTime = null;
     pointer.energy = pointer.presence = pointer.velocityX = pointer.velocityY = pointer.inputVelocityX = pointer.inputVelocityY = 0;
@@ -267,20 +250,11 @@
     }
   }
 
-  function addRipple(horizontal, vertical, strength) {
-    ripples.set([horizontal, vertical, elapsed, strength], rippleIndex * 4);
-    rippleIndex = (rippleIndex + 1) % 8;
-    lastRippleTime = elapsed;
-    lastRippleX = horizontal;
-    lastRippleY = vertical;
-  }
-
   surface.addEventListener('pointermove', movePointer, { passive: true });
   surface.addEventListener('pointerdown', (event) => {
     if (!enabled() || event.target.closest('a, button, input')) return;
     movePointer(event);
-    idleTime = 0;
-    addRipple(pointer.targetX, pointer.targetY, 1);
+    stationaryTime = 0;
   }, { passive: true });
   surface.addEventListener('pointerleave', () => { pointer.active = false; });
   surface.addEventListener('pointercancel', () => { pointer.active = false; });
