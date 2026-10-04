@@ -12,7 +12,6 @@
     attribute vec2 position;
     attribute float tone;
     attribute float seed;
-    attribute vec3 color;
     uniform vec2 resolution;
     uniform float clock;
     uniform float pixelRatio;
@@ -24,9 +23,7 @@
     varying float brightness;
     varying float visibility;
     varying float glow;
-    varying vec3 particleColor;
     void main() {
-      particleColor = color;
       float scale = spacing / 8.0;
       vec2 delta = position - cursor;
       float distance = length(delta);
@@ -67,17 +64,14 @@
   `;
   const fragmentSource = `
     precision mediump float;
-    uniform float linearOutput;
     varying float brightness;
     varying float visibility;
     varying float glow;
-    varying vec3 particleColor;
     void main() {
       float distance = length(gl_PointCoord - 0.5);
       float core = 1.0 - smoothstep(0.05, 0.5, distance);
       float opacity = core * brightness;
-      vec3 displayColor = mix(pow(particleColor, vec3(1.0 / 2.2)), particleColor, linearOutput);
-      gl_FragColor = vec4(displayColor, opacity * visibility);
+      gl_FragColor = vec4(vec3(0.93, 0.93, 0.90), opacity * visibility);
     }
   `;
 
@@ -111,19 +105,16 @@
   const position = graphics.getAttribLocation(program, 'position');
   const tone = graphics.getAttribLocation(program, 'tone');
   const seed = graphics.getAttribLocation(program, 'seed');
-  const color = graphics.getAttribLocation(program, 'color');
   graphics.enableVertexAttribArray(position);
   graphics.enableVertexAttribArray(tone);
   graphics.enableVertexAttribArray(seed);
-  graphics.enableVertexAttribArray(color);
-  graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 28, 0);
-  graphics.vertexAttribPointer(tone, 1, graphics.FLOAT, false, 28, 8);
-  graphics.vertexAttribPointer(seed, 1, graphics.FLOAT, false, 28, 12);
-  graphics.vertexAttribPointer(color, 3, graphics.FLOAT, false, 28, 16);
+  graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 16, 0);
+  graphics.vertexAttribPointer(tone, 1, graphics.FLOAT, false, 16, 8);
+  graphics.vertexAttribPointer(seed, 1, graphics.FLOAT, false, 16, 12);
   graphics.enable(graphics.BLEND);
   graphics.blendFunc(graphics.SRC_ALPHA, graphics.ONE_MINUS_SRC_ALPHA);
   graphics.clearColor(0.067, 0.071, 0.063, 1);
-  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'velocity', 'linearOutput'].map((name) => [name, graphics.getUniformLocation(program, name)]));
+  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'velocity'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
   const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, sampleTime: null, sampleInterval: 16.7, inputVelocityX: 0, inputVelocityY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
   let pointCount = 0;
@@ -240,7 +231,6 @@
       graphics.disableVertexAttribArray(position);
       graphics.disableVertexAttribArray(tone);
       graphics.disableVertexAttribArray(seed);
-      graphics.disableVertexAttribArray(color);
       graphics.enableVertexAttribArray(0);
       graphics.bindBuffer(graphics.ARRAY_BUFFER, screenBuffer);
       graphics.vertexAttribPointer(0, 2, graphics.FLOAT, false, 0, 0);
@@ -270,12 +260,9 @@
     graphics.enableVertexAttribArray(position);
     graphics.enableVertexAttribArray(tone);
     graphics.enableVertexAttribArray(seed);
-    graphics.enableVertexAttribArray(color);
-    graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 28, 0);
-    graphics.vertexAttribPointer(tone, 1, graphics.FLOAT, false, 28, 8);
-    graphics.vertexAttribPointer(seed, 1, graphics.FLOAT, false, 28, 12);
-    graphics.vertexAttribPointer(color, 3, graphics.FLOAT, false, 28, 16);
-    graphics.uniform1f(uniforms.linearOutput, linear ? 1 : 0);
+    graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 16, 0);
+    graphics.vertexAttribPointer(tone, 1, graphics.FLOAT, false, 16, 8);
+    graphics.vertexAttribPointer(seed, 1, graphics.FLOAT, false, 16, 12);
     graphics.enable(graphics.BLEND);
     graphics.clearColor(linear ? 0.0026 : 0.067, linear ? 0.003 : 0.071, linear ? 0.0023 : 0.063, 1);
     graphics.clear(graphics.COLOR_BUFFER_BIT);
@@ -318,17 +305,13 @@
       const context = sampler.getContext('2d', { willReadFrequently: true });
       context.drawImage(portrait, (width - portrait.naturalWidth * scale) * alignment[0] / spacing, (height - portrait.naturalHeight * scale) * alignment[1] / spacing, portrait.naturalWidth * scale / spacing, portrait.naturalHeight * scale / spacing);
       const pixels = context.getImageData(0, 0, columns, rows).data;
-      const points = new Float32Array(columns * rows * 7);
+      const points = new Float32Array(columns * rows * 4);
       for (let row = 0; row < rows; row++) {
         for (let column = 0; column < columns; column++) {
           const index = row * columns + column;
           const luminance = (pixels[index * 4] * 0.299 + pixels[index * 4 + 1] * 0.587 + pixels[index * 4 + 2] * 0.114) / 255;
           const seed = ((Math.imul(column + 1, 73856093) ^ Math.imul(row + 1, 19349663)) >>> 0) / 4294967296;
-          const red = Math.pow(pixels[index * 4] / 255, 2.2);
-          const green = Math.pow(pixels[index * 4 + 1] / 255, 2.2);
-          const blue = Math.pow(pixels[index * 4 + 2] / 255, 2.2);
-          const peak = Math.max(red, green, blue, 0.001);
-          points.set([(column + 0.5) * spacing, (row + 0.5) * spacing, Math.min(1, Math.max(0, luminance * 1.1)), seed, red / peak * 0.93, green / peak * 0.93, blue / peak * 0.93], index * 7);
+          points.set([(column + 0.5) * spacing, (row + 0.5) * spacing, Math.min(1, Math.max(0, luminance * 1.1)), seed], index * 4);
         }
       }
       pointCount = columns * rows;

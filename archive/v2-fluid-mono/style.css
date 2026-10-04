@@ -7,7 +7,7 @@
 @media(max-width:600px){html{scroll-padding-top:20px}.header nav{order:3;width:100%;justify-content:space-between;padding-top:8px}.header{font-size:11px}.header-tools{gap:15px}.hero{padding:130px 18px 20px;min-height:760px;height:100svh}.hero-title .eyebrow{font-size:10px}h1{font-size:17vw;margin-bottom:15px}.hero-caption{font-size:10px;max-width:320px}.portrait{inset:29% 0 0}.portrait img{left:0;width:115%;object-position:65% center;mask-size:4px 4px}.portrait-fade{background:linear-gradient(var(--bg),transparent 20%,transparent 50%,var(--bg)),linear-gradient(90deg,var(--bg),transparent 20%,transparent 75%,var(--bg))}.hero-bottom{left:20px;right:20px;bottom:25px}.hero-bottom p{font-size:16px}.scroll-cue{font-size:0;gap:0}.scroll-cue span{font-size:20px}.display{font-size:57px}.headline{font-size:22px}.bio{font-size:16px}.section-top{display:block}.section-top>span,.section-aside{display:block;margin-top:25px}.paper{grid-template-columns:1fr;padding:30px 0}.paper-art{height:240px}.paper h3{font-size:24px}.background-grid{grid-template-columns:1fr;gap:40px;margin-top:45px}.empty-notes{gap:20px}.empty-notes h3{font-size:21px}.personal-copy{font-size:18px}.footer-meta{flex-wrap:wrap;font-size:10px}.footer-title{font-size:16vw}.footer-bottom{font-size:9px}.post summary{flex-wrap:wrap}.post summary strong{flex-basis:80%}}
 .hero{min-height:720px}
 h1{font-size:clamp(80px,19.8vw,310px)}
-.portrait img{filter:contrast(1.1) brightness(1.05)}
+.portrait img{filter:grayscale(1) contrast(1.1) brightness(1.05)}
 .portrait canvas{position:absolute;pointer-events:none;display:none;mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}
 .portrait.ripple-ready canvas{display:block}
 .portrait.ripple-ready img{opacity:0}

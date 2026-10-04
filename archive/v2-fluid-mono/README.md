@@ -1,6 +1,6 @@
 # Personal website — version 2
 
-Dark, typographic research portfolio inspired by the visual direction of https://www.hontran.dev/: large condensed type, a color particle portrait, monospace labels, and subtle motion. Original markup and styling; only the owner's approved content and photograph are used.
+Dark, typographic research portfolio inspired by the visual direction of https://www.hontran.dev/: large condensed type, a monochrome dotted portrait, monospace labels, and subtle motion. Original markup and styling; only the owner's approved content and photograph are used.
 
 - New preview: https://tterumiimurett.github.io/preview/v2/
 - Editor: https://tterumiimurett.github.io/preview/v2/?edit=1
@@ -21,10 +21,6 @@ Berkeley course projects are excluded; the exchange education entry remains. pro
 
 Typography experiment: headings use Smiley Sans (得意黑) v2.0.1 from https://github.com/atelier-anchor/smiley-sans. The unmodified official WOFF2 file is self-hosted in fonts/, with its SIL Open Font License in fonts/OFL.txt. Its built-in slant is preserved; synthetic bold and italic are disabled for headings. Manrope body text and IBM Plex Mono labels retain readability and load from Google Fonts with local fallbacks. Wave and pointer behavior are unchanged.
 
-The pre-font-change V2 snapshot, including its interactive and idle waves, is preserved at https://tterumiimurett.github.io/archive/v2-idle/. A full local copy and ZIP are stored alongside this project as personal-site-v2-idle-2026-10-04.
-
-The approved monochrome fluid version is preserved unchanged at https://tterumiimurett.github.io/archive/v2-fluid-mono/. The B&W header link and footer archive link open it. The local snapshot and ZIP are personal-site-v2-fluid-mono-2026-10-04. Its source commit is db3a20fbd43beed49f4127d9e70e5c4f25b8d1b3.
-
-The current portrait samples the photograph's RGB into each particle, alongside the unchanged luminance used for size and motion. RGB is converted to linear light and normalized by its strongest channel because luminance is already encoded by size and opacity. Both direct rendering and bloom retain the original hues; static and reduced-motion fallbacks are also colored. The image file, particle positions, motion equations, wave timing, size behavior and typography are unchanged.
+The pre-font-change V2 snapshot, including its interactive and idle waves, is preserved at https://tterumiimurett.github.io/archive/v2-idle/. The ORIGINAL links open this snapshot for comparison. A full local copy and ZIP are stored alongside this project as personal-site-v2-idle-2026-10-04.
 
 Plain HTML/CSS/JavaScript, compatible with GitHub Pages.
