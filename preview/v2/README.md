@@ -23,4 +23,6 @@ The pre-font-change V2 snapshot, including its interactive and idle waves, is pr
 
 Plain HTML/CSS/JavaScript, compatible with GitHub Pages.
 
+Fine dots now fade in and out with the ambient wave and are revealed locally by pointer movement, including at the pointer center. Larger portrait dots retain their opacity. Moving bands use a stable radius, gentler displacement and a small velocity-aligned deformation and drift rather than rigid speed-scaled circles. No particle collision simulation or accumulated wave sources are used.
+
 Particle refinement: the moving field uses cursor-relative concentric bands, without emitting separate wakes or simulating collisions. Stationary ripples have reduced displacement and brightness and travel more slowly. Dot diameter follows photograph luminance with subtle ambient and interaction modulation, bounded to 12–98% of grid spacing. Dark areas carry finer dots and bright areas larger dots; wave crests gently change their size. The ambient wave remains independent and always present while motion is enabled.

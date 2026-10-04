@@ -21,15 +21,20 @@
     uniform float fieldStrength;
     uniform float hoverStrength;
     uniform float hoverTime;
+    uniform vec2 velocity;
     varying float brightness;
+    varying float visibility;
     void main() {
       vec2 delta = position - cursor;
       float distance = length(delta);
       vec2 outward = delta / max(distance, 1.0);
-      float radius = min(resolution.x * 0.28, 90.0 + energy * 45.0);
-      float field = exp(-pow(distance / radius, 2.0)) * smoothstep(0.0, 16.0, distance) * presence * fieldStrength;
-      float fieldRings = sin(distance / radius * 9.0 - 0.8);
-      vec2 displacement = outward * field * (4.0 + fieldRings * 9.0) * (0.8 + energy * 0.4);
+      float radius = min(resolution.x * 0.28, 125.0);
+      float influence = exp(-pow(distance / radius, 2.0)) * presence * fieldStrength;
+      float field = influence * smoothstep(0.0, 24.0, distance);
+      vec2 flow = velocity / max(650.0, length(velocity));
+      float ringDistance = distance - dot(delta, flow) * 0.16;
+      float fieldRings = sin(ringDistance / radius * 6.5 - 0.8);
+      vec2 displacement = (outward * (2.0 + fieldRings * 4.0) + flow * 6.0) * field;
       float front = hoverTime * 65.0;
       float waveEnvelope = exp(-distance / 160.0) * smoothstep(0.0, 20.0, distance) * (1.0 - smoothstep(front - 28.0, front + 28.0, distance));
       float hoverWave = sin(distance * 0.052 - hoverTime * 3.38) * waveEnvelope * hoverStrength * presence;
@@ -41,19 +46,26 @@
       displacement += idleOffset / max(idleDistance, 1.0) * idleWave * 1.4 + vec2(0.4, 0.7) * idleSecondary * 0.65;
       vec2 screen = (position + displacement) / resolution;
       gl_Position = vec4(screen.x * 2.0 - 1.0, 1.0 - screen.y * 2.0, 0.0, 1.0);
-      float sizeWave = idleWave * 0.035 + idleSecondary * 0.02 + fieldRings * field * 0.13 + hoverWave * 0.045;
+      float fine = 1.0 - smoothstep(0.08, 0.40, tone);
+      float ambientReveal = smoothstep(-0.25, 0.45, idleWave * 0.65 + idleSecondary * 0.35);
+      float cursorReveal = smoothstep(0.02, 0.45, influence);
+      float fineReveal = mix(ambientReveal, 1.0, cursorReveal);
+      visibility = mix(1.0, fineReveal, fine);
+      float sizeWave = idleWave * 0.035 + idleSecondary * 0.02 + fieldRings * field * 0.065 + hoverWave * 0.045 + fine * cursorReveal * 0.04;
       float dotSize = clamp(0.16 + 0.73 * pow(tone, 0.85) + sizeWave, 0.12, 0.98);
       brightness = clamp(tone * 1.12 + field * (0.025 + fieldRings * 0.035) + hoverWave * 0.035 + idleWave * 0.016, 0.0, 1.0);
+      brightness = mix(brightness, max(brightness, 0.22 + cursorReveal * 0.10), fine);
       gl_PointSize = spacing * dotSize * pixelRatio;
     }
   `;
   const fragmentSource = `
     precision mediump float;
     varying float brightness;
+    varying float visibility;
     void main() {
       float distance = length(gl_PointCoord - 0.5);
       float opacity = 1.0 - smoothstep(0.35, 0.5, distance);
-      gl_FragColor = vec4(vec3(0.93, 0.93, 0.90) * brightness, opacity);
+      gl_FragColor = vec4(vec3(0.93, 0.93, 0.90) * brightness, opacity * visibility);
     }
   `;
 
@@ -93,7 +105,7 @@
   graphics.enable(graphics.BLEND);
   graphics.blendFunc(graphics.SRC_ALPHA, graphics.ONE_MINUS_SRC_ALPHA);
   graphics.clearColor(0.067, 0.071, 0.063, 1);
-  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'fieldStrength', 'hoverStrength', 'hoverTime'].map((name) => [name, graphics.getUniformLocation(program, name)]));
+  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'fieldStrength', 'hoverStrength', 'hoverTime', 'velocity'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
   const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, sampleTime: null, sampleInterval: 16.7, inputVelocityX: 0, inputVelocityY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
   let pointCount = 0;
@@ -180,6 +192,7 @@
     pointer.energy += (targetEnergy - pointer.energy) * (1 - Math.exp(-(moving ? 8 : 2.2) * delta));
     graphics.uniform1f(uniforms.clock, elapsed);
     graphics.uniform2f(uniforms.cursor, pointer.trailX, pointer.trailY);
+    graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
     graphics.uniform1f(uniforms.energy, pointer.energy);
     graphics.uniform1f(uniforms.presence, pointer.presence);
     graphics.uniform1f(uniforms.fieldStrength, fieldStrength);
