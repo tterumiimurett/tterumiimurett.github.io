@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Terumi Chiba — speech language models, full-duplex interaction, and agent evaluation. Research and notes from Tsinghua University.">
+  <meta name="theme-color" content="#111210">
+  <title>Terumi Chiba · Research & Notes</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="content.js" defer></script>
+  <script src="site.js" defer></script>
+  <script src="motion.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#about">Skip to content</a>
+  <header class="header"><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">✳</span> TERUMI CHIBA</a><nav aria-label="Main navigation"><a href="#about">About</a><a href="#research">Research</a><a href="#background">Journey</a><a href="#notes">Notes</a></nav><div class="header-tools"><a href="../../archive/v1/">[ V1 ]</a><button id="motion-toggle" aria-pressed="false" aria-label="Pause animations">[ MOTION ON ]</button></div></header>
+  <main>
+    <section class="hero" id="top" aria-labelledby="name">
+      <div class="hero-grain" aria-hidden="true"></div>
+      <div class="hero-title"><p class="eyebrow">RESEARCHER / TSINGHUA UNIVERSITY</p><h1 id="name">Terumi Chiba</h1><div class="hero-caption"><span>SPEECH · FULL-DUPLEX INTERACTION · AGENT EVALUATION</span><span>PERSONAL INDEX — VOL. 02</span></div></div>
+      <div class="portrait" id="portrait-stage"><div class="portrait-art" hidden></div><img id="portrait" src="images/portrait.jpg" alt="Terumi Chiba" fetchpriority="high"><div class="portrait-fade" aria-hidden="true"></div></div>
+      <div class="hero-bottom"><div><span class="micro accent">[ RESEARCH FOCUS ]</span><p>How do intelligent systems<br>listen, interact, and act?</p><a class="outline-link" href="#research">EXPLORE RESEARCH <span>↗</span></a></div><div class="hero-coordinate micro"><span>BEIJING, CHINA</span><span id="beijing-time"></span></div><a class="scroll-cue micro" href="#about">SCROLL TO EXPLORE <span>↓</span></a></div>
+      <span class="hero-side micro" aria-hidden="true">HUMAN VOICE / MACHINE INTELLIGENCE</span>
+    </section>
+    <section class="section about" id="about"><div class="section-index micro">[ 01 — ABOUT ]</div><div class="about-main"><h2 class="display">LISTEN CLOSELY.<br><span class="muted">THINK DEEPLY.</span></h2><p id="headline" class="headline"></p><p id="bio" class="bio"></p><div id="interests" class="interests"></div><a id="contact" hidden>GET IN TOUCH ↗</a></div></section>
+    <section class="section research" id="research"><div class="section-top"><div><p class="micro accent">[ 02 — SELECTED RESEARCH ]</p><h2 class="display">FROM SIGNAL<br>TO UNDERSTANDING.</h2></div><span class="micro muted">2026 / <span id="paper-count">02</span> SELECTED WORKS</span></div><div id="papers"></div></section>
+    <section class="section journey" id="background"><div class="section-top"><div><p class="micro accent">[ 03 — THE JOURNEY ]</p><h2 class="display">ALWAYS<br>LEARNING.</h2></div><p class="section-aside">Research, education,<br>and the work in between.</p></div><div class="background-grid"><section aria-labelledby="education-heading"><h3 class="micro" id="education-heading">[ EDUCATION ]</h3><div id="education"></div></section><section aria-labelledby="experience-heading"><h3 class="micro" id="experience-heading">[ EXPERIENCE ]</h3><div id="experience"></div></section></div></section>
+    <section class="section notebook" id="notes"><div class="section-top"><div><p class="micro accent">[ 04 — FIELD NOTES ]</p><h2 class="display">THINKING<br>OUT LOUD.</h2></div><p class="section-aside">Machine learning, mathematics,<br>and the occasional detour.</p></div><div id="posts"></div></section>
+    <section class="section life"><div class="section-index micro">[ 05 — OFFLINE ]</div><div><h2 class="display">BEYOND<br>THE LAB.</h2><p id="personal" class="personal-copy"></p><a class="outline-link" href="https://github.com/tterumiimurett">FIND ME ON GITHUB <span>↗</span></a></div></section>
+  </main>
+  <footer><div class="footer-meta micro"><span>© <span id="year"></span> <span id="footer-name"></span></span><a href="../../archive/v1/">VERSION 1 ARCHIVE</a><a href="#top">BACK TO TOP ↑</a></div><div class="footer-title" aria-hidden="true">STAY CURIOUS.</div><div class="footer-bottom micro"><span>RESEARCH / LIFE / EVERYTHING BETWEEN</span><span>VERSION 02</span></div></footer>
+  <button id="edit-button" class="edit-button" hidden>编辑内容</button>
+  <dialog id="editor" aria-labelledby="editor-title"><form id="edit-form"><div class="editor-heading"><h2 id="editor-title">编辑 V2 内容</h2><button type="button" id="close-editor" aria-label="关闭">×</button></div><p>修改只影响当前预览。下载 content.js 后更新到 preview/v2/ 目录，即可保存并发布。</p><label>显示姓名<input name="name" required></label><label>个人定位<textarea name="headline" rows="2" required></textarea></label><label>个人介绍<textarea name="bio" rows="5"></textarea></label><label>头像路径或 HTTPS 地址<input name="portrait"></label><label>公开联系邮箱（可留空）<input name="email" type="email"></label><label>研究兴趣（逗号分隔）<input name="interests"></label><label class="check"><input name="showUpcoming" type="checkbox">展示 proactive FD-benchmark</label><div class="editor-actions"><button type="submit">应用预览</button><button type="button" id="download">下载 content.js</button></div><p id="edit-status" role="status"></p></form></dialog>
+  <noscript><p class="section">Enable JavaScript for the complete portfolio. Read my research: <a href="https://arxiv.org/abs/2609.38867">Talk2Agent</a> and <a href="https://arxiv.org/abs/2605.10027">Speech-based Psychological Crisis Assessment using LLMs</a>.</p></noscript>
+</body>
+</html>
