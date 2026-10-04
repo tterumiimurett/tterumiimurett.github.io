@@ -22,3 +22,5 @@ Typography experiment: headings use Smiley Sans (得意黑) v2.0.1 from https://
 The pre-font-change V2 snapshot, including its interactive and idle waves, is preserved at https://tterumiimurett.github.io/archive/v2-idle/. The ORIGINAL links open this snapshot for comparison. A full local copy and ZIP are stored alongside this project as personal-site-v2-idle-2026-10-04.
 
 Plain HTML/CSS/JavaScript, compatible with GitHub Pages.
+
+Particle refinement: the moving field uses cursor-relative concentric bands, without emitting separate wakes or simulating collisions. Stationary ripples have reduced displacement and brightness and travel more slowly. Dot diameter follows photograph luminance with subtle ambient and interaction modulation, bounded to 12–98% of grid spacing. Dark areas carry finer dots and bright areas larger dots; wave crests gently change their size. The ambient wave remains independent and always present while motion is enabled.

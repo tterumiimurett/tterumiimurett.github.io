@@ -28,11 +28,12 @@
       vec2 outward = delta / max(distance, 1.0);
       float radius = min(resolution.x * 0.28, 90.0 + energy * 45.0);
       float field = exp(-pow(distance / radius, 2.0)) * smoothstep(0.0, 16.0, distance) * presence * fieldStrength;
-      vec2 displacement = outward * field * (20.0 + energy * 12.0);
-      float front = hoverTime * 95.0;
+      float fieldRings = sin(distance / radius * 9.0 - 0.8);
+      vec2 displacement = outward * field * (4.0 + fieldRings * 9.0) * (0.8 + energy * 0.4);
+      float front = hoverTime * 65.0;
       float waveEnvelope = exp(-distance / 160.0) * smoothstep(0.0, 20.0, distance) * (1.0 - smoothstep(front - 28.0, front + 28.0, distance));
-      float hoverWave = sin(distance * 0.065 - hoverTime * 6.175) * waveEnvelope * hoverStrength * presence;
-      displacement += outward * hoverWave * 6.0;
+      float hoverWave = sin(distance * 0.052 - hoverTime * 3.38) * waveEnvelope * hoverStrength * presence;
+      displacement += outward * hoverWave * 2.4;
       vec2 idleOffset = position - resolution * vec2(0.56, 0.48);
       float idleDistance = length(idleOffset);
       float idleWave = sin(idleDistance * 0.033 - clock * 1.1);
@@ -40,8 +41,10 @@
       displacement += idleOffset / max(idleDistance, 1.0) * idleWave * 1.4 + vec2(0.4, 0.7) * idleSecondary * 0.65;
       vec2 screen = (position + displacement) / resolution;
       gl_Position = vec4(screen.x * 2.0 - 1.0, 1.0 - screen.y * 2.0, 0.0, 1.0);
-      brightness = clamp(tone * 1.12 + field * 0.055 + hoverWave * 0.10 + idleWave * 0.016, 0.0, 1.0);
-      gl_PointSize = spacing * (0.36 + 0.48 * sqrt(tone)) * pixelRatio;
+      float sizeWave = idleWave * 0.035 + idleSecondary * 0.02 + fieldRings * field * 0.13 + hoverWave * 0.045;
+      float dotSize = clamp(0.16 + 0.73 * pow(tone, 0.85) + sizeWave, 0.12, 0.98);
+      brightness = clamp(tone * 1.12 + field * (0.025 + fieldRings * 0.035) + hoverWave * 0.035 + idleWave * 0.016, 0.0, 1.0);
+      gl_PointSize = spacing * dotSize * pixelRatio;
     }
   `;
   const fragmentSource = `
