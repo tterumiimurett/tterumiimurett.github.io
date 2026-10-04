@@ -95,7 +95,7 @@
   graphics.clearColor(0.067, 0.071, 0.063, 1);
   const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'velocity', 'energy', 'presence', 'tap'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
-  const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, deltaX: 0, deltaY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
+  const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, sampleTime: null, sampleInterval: 16.7, inputVelocityX: 0, inputVelocityY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
   const tap = new Float32Array([0, 0, -10]);
   let pointCount = 0;
   let elapsed = 0;
@@ -152,30 +152,27 @@
   function draw(timestamp) {
     frameId = 0;
     if (!enabled()) return;
-    if (!previousFrame || timestamp - previousFrame >= 15) {
-      const delta = previousFrame ? Math.min((timestamp - previousFrame) / 1000, 0.05) : 1 / 60;
-      elapsed += delta;
-      previousFrame = timestamp;
-      const follow = 1 - Math.exp(-5.5 * delta);
-      pointer.trailX += (pointer.targetX - pointer.trailX) * follow;
-      pointer.trailY += (pointer.targetY - pointer.trailY) * follow;
-      pointer.presence += ((pointer.active ? 1 : 0) - pointer.presence) * (1 - Math.exp(-(pointer.active ? 8 : 3) * delta));
-      pointer.energy *= Math.exp(-2.2 * delta);
-      const moving = pointer.deltaX !== 0 || pointer.deltaY !== 0;
-      const momentum = 1 - Math.exp(-(moving ? 10 : 1.4) * delta);
-      pointer.velocityX += (pointer.deltaX / delta - pointer.velocityX) * momentum;
-      pointer.velocityY += (pointer.deltaY / delta - pointer.velocityY) * momentum;
-      pointer.deltaX = 0;
-      pointer.deltaY = 0;
-      graphics.uniform1f(uniforms.clock, elapsed);
-      graphics.uniform2f(uniforms.cursor, pointer.trailX, pointer.trailY);
-      graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
-      graphics.uniform1f(uniforms.energy, pointer.energy);
-      graphics.uniform1f(uniforms.presence, pointer.presence);
-      graphics.uniform3fv(uniforms.tap, tap);
-      graphics.clear(graphics.COLOR_BUFFER_BIT);
-      graphics.drawArrays(graphics.POINTS, 0, pointCount);
-    }
+    const delta = previousFrame ? Math.min((timestamp - previousFrame) / 1000, 0.05) : 1 / 60;
+    elapsed += delta;
+    previousFrame = timestamp;
+    const follow = 1 - Math.exp(-5.5 * delta);
+    pointer.trailX += (pointer.targetX - pointer.trailX) * follow;
+    pointer.trailY += (pointer.targetY - pointer.trailY) * follow;
+    pointer.presence += ((pointer.active ? 1 : 0) - pointer.presence) * (1 - Math.exp(-(pointer.active ? 8 : 3) * delta));
+    const moving = pointer.active && pointer.sampleTime !== null && timestamp - pointer.sampleTime < Math.min(100, Math.max(50, pointer.sampleInterval * 2));
+    const momentum = 1 - Math.exp(-(moving ? 10 : 1.4) * delta);
+    pointer.velocityX += ((moving ? pointer.inputVelocityX : 0) - pointer.velocityX) * momentum;
+    pointer.velocityY += ((moving ? pointer.inputVelocityY : 0) - pointer.velocityY) * momentum;
+    const targetEnergy = moving ? Math.min(1, Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) / 650) : 0;
+    pointer.energy += (targetEnergy - pointer.energy) * (1 - Math.exp(-(moving ? 8 : 2.2) * delta));
+    graphics.uniform1f(uniforms.clock, elapsed);
+    graphics.uniform2f(uniforms.cursor, pointer.trailX, pointer.trailY);
+    graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
+    graphics.uniform1f(uniforms.energy, pointer.energy);
+    graphics.uniform1f(uniforms.presence, pointer.presence);
+    graphics.uniform3fv(uniforms.tap, tap);
+    graphics.clear(graphics.COLOR_BUFFER_BIT);
+    graphics.drawArrays(graphics.POINTS, 0, pointCount);
     frameId = requestAnimationFrame(draw);
   }
 
@@ -184,7 +181,8 @@
     frameId = 0;
     previousFrame = 0;
     pointer.active = false;
-    pointer.energy = pointer.presence = pointer.velocityX = pointer.velocityY = pointer.deltaX = pointer.deltaY = 0;
+    pointer.sampleTime = null;
+    pointer.energy = pointer.presence = pointer.velocityX = pointer.velocityY = pointer.inputVelocityX = pointer.inputVelocityY = 0;
     if (enabled()) frameId = requestAnimationFrame(draw);
   }
 
@@ -210,21 +208,33 @@
   function movePointer(event) {
     if (!enabled() || event.target.closest('a, button, input')) return;
     const bounds = canvas.getBoundingClientRect();
-    const horizontal = event.clientX - bounds.left;
-    const vertical = event.clientY - bounds.top;
-    if (pointer.active) {
-      const deltaX = horizontal - pointer.targetX;
-      const deltaY = vertical - pointer.targetY;
-      pointer.deltaX += deltaX;
-      pointer.deltaY += deltaY;
-      pointer.energy = Math.min(1, pointer.energy + Math.hypot(deltaX, deltaY) * 0.005);
-    } else {
-      pointer.trailX = horizontal;
-      pointer.trailY = vertical;
+    const coalesced = event.getCoalescedEvents?.();
+    const samples = coalesced?.length ? coalesced : [event];
+    for (const sample of samples) {
+      const horizontal = sample.clientX - bounds.left;
+      const vertical = sample.clientY - bounds.top;
+      const sampleTime = Number.isFinite(sample.timeStamp) ? sample.timeStamp : performance.now();
+      const interval = pointer.sampleTime === null ? 0 : sampleTime - pointer.sampleTime;
+      if (pointer.active && interval > 0 && interval < 150) {
+        const smoothing = 1 - Math.exp(-interval / 25);
+        const velocityX = (horizontal - pointer.targetX) * 1000 / interval;
+        const velocityY = (vertical - pointer.targetY) * 1000 / interval;
+        pointer.inputVelocityX += (velocityX - pointer.inputVelocityX) * smoothing;
+        pointer.inputVelocityY += (velocityY - pointer.inputVelocityY) * smoothing;
+        pointer.sampleInterval = interval;
+      } else if (!pointer.active) {
+        pointer.trailX = horizontal;
+        pointer.trailY = vertical;
+        pointer.inputVelocityX = pointer.inputVelocityY = 0;
+      } else if (interval >= 150) {
+        pointer.inputVelocityX = pointer.inputVelocityY = 0;
+      }
+      if (pointer.sampleTime !== null && interval <= 0) continue;
+      pointer.targetX = horizontal;
+      pointer.targetY = vertical;
+      pointer.sampleTime = sampleTime;
+      pointer.active = true;
     }
-    pointer.targetX = horizontal;
-    pointer.targetY = vertical;
-    pointer.active = true;
   }
 
   surface.addEventListener('pointermove', movePointer, { passive: true });
