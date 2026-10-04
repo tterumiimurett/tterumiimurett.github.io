@@ -22,6 +22,7 @@
     uniform float hoverStrength;
     uniform float hoverTime;
     uniform vec2 velocity;
+    uniform vec2 turn;
     varying float brightness;
     varying float visibility;
     void main() {
@@ -29,12 +30,22 @@
       float distance = length(delta);
       vec2 outward = delta / max(distance, 1.0);
       float radius = min(resolution.x * 0.28, 125.0);
-      float influence = exp(-pow(distance / radius, 2.0)) * presence * fieldStrength;
+      float speed = length(velocity);
+      float momentum = 1.0 - exp(-speed / 550.0);
+      vec2 direction = velocity / max(speed, 0.001);
+      vec2 flow = direction * momentum;
+      float along = dot(delta, direction);
+      float tail = 1.0 - smoothstep(-radius * 1.5, radius * 0.4, along);
+      vec2 bend = turn / max(650.0, length(turn));
+      vec2 warped = delta - direction * along * momentum * (0.30 + tail * 0.35);
+      warped += direction * radius * momentum * 0.12;
+      warped -= bend * radius * tail * tail * 0.65;
+      float ringDistance = length(warped);
+      vec2 fieldNormal = warped / max(ringDistance, 1.0);
+      float influence = exp(-pow(ringDistance / radius, 2.0)) * presence * fieldStrength;
       float field = influence * smoothstep(0.0, 24.0, distance);
-      vec2 flow = velocity / max(650.0, length(velocity));
-      float ringDistance = distance - dot(delta, flow) * 0.16;
       float fieldRings = sin(ringDistance / radius * 6.5 - 0.8);
-      vec2 displacement = (outward * (2.0 + fieldRings * 4.0) + flow * 6.0) * field;
+      vec2 displacement = (fieldNormal * (2.0 + fieldRings * 4.0) + flow * 9.0 + bend * tail * 5.0) * field;
       float front = hoverTime * 65.0;
       float waveEnvelope = exp(-distance / 160.0) * smoothstep(0.0, 20.0, distance) * (1.0 - smoothstep(front - 28.0, front + 28.0, distance));
       float hoverWave = sin(distance * 0.052 - hoverTime * 3.38) * waveEnvelope * hoverStrength * presence;
@@ -105,7 +116,7 @@
   graphics.enable(graphics.BLEND);
   graphics.blendFunc(graphics.SRC_ALPHA, graphics.ONE_MINUS_SRC_ALPHA);
   graphics.clearColor(0.067, 0.071, 0.063, 1);
-  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'fieldStrength', 'hoverStrength', 'hoverTime', 'velocity'].map((name) => [name, graphics.getUniformLocation(program, name)]));
+  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'energy', 'presence', 'fieldStrength', 'hoverStrength', 'hoverTime', 'velocity', 'turn'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
   const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, sampleTime: null, sampleInterval: 16.7, inputVelocityX: 0, inputVelocityY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
   let pointCount = 0;
@@ -115,6 +126,8 @@
   let hoverStrength = 0;
   let hoverTime = 0;
   let wasResting = false;
+  let historyVelocityX = 0;
+  let historyVelocityY = 0;
   let previousFrame = 0;
   let frameId = 0;
   let ready = false;
@@ -180,7 +193,7 @@
     const inMotion = moving && inputSpeed > 6;
     stationaryTime = !pointer.active || inMotion ? 0 : stationaryTime + delta;
     const resting = pointer.active && stationaryTime > 0.25;
-    fieldStrength += ((inMotion ? 1 : 0) - fieldStrength) * (1 - Math.exp(-(inMotion ? 14 : 5) * delta));
+    fieldStrength += ((inMotion ? 1 : 0) - fieldStrength) * (1 - Math.exp(-(inMotion ? 14 : 2.8) * delta));
     hoverStrength += ((resting ? 1 : 0) - hoverStrength) * (1 - Math.exp(-(resting ? 4 : 12) * delta));
     if (resting && !wasResting) hoverTime = 0;
     if (resting || hoverStrength > 0.001) hoverTime += delta;
@@ -188,11 +201,15 @@
     const momentum = 1 - Math.exp(-(moving ? 10 : 1.4) * delta);
     pointer.velocityX += ((moving ? pointer.inputVelocityX : 0) - pointer.velocityX) * momentum;
     pointer.velocityY += ((moving ? pointer.inputVelocityY : 0) - pointer.velocityY) * momentum;
+    const historyFollow = 1 - Math.exp(-3.2 * delta);
+    historyVelocityX += (pointer.velocityX - historyVelocityX) * historyFollow;
+    historyVelocityY += (pointer.velocityY - historyVelocityY) * historyFollow;
     const targetEnergy = moving ? Math.min(1, Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) / 650) : 0;
     pointer.energy += (targetEnergy - pointer.energy) * (1 - Math.exp(-(moving ? 8 : 2.2) * delta));
     graphics.uniform1f(uniforms.clock, elapsed);
     graphics.uniform2f(uniforms.cursor, pointer.trailX, pointer.trailY);
     graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
+    graphics.uniform2f(uniforms.turn, pointer.velocityX - historyVelocityX, pointer.velocityY - historyVelocityY);
     graphics.uniform1f(uniforms.energy, pointer.energy);
     graphics.uniform1f(uniforms.presence, pointer.presence);
     graphics.uniform1f(uniforms.fieldStrength, fieldStrength);
@@ -209,6 +226,7 @@
     previousFrame = 0;
     stationaryTime = fieldStrength = hoverStrength = hoverTime = 0;
     wasResting = false;
+    historyVelocityX = historyVelocityY = 0;
     pointer.active = false;
     pointer.sampleTime = null;
     pointer.energy = pointer.presence = pointer.velocityX = pointer.velocityY = pointer.inputVelocityX = pointer.inputVelocityY = 0;
