@@ -17,6 +17,15 @@ function render() {
   byId('footer-name').textContent = content.name;
   byId('headline').textContent = content.headline;
   byId('bio').textContent = content.bio;
+  byId('personal').textContent = content.personal || '';
+  for (const section of ['education', 'experience']) {
+    byId(section).replaceChildren(...(content[section] || []).map((entry) => {
+      const article = element('article', 'background-entry');
+      article.append(element('p', 'entry-period', entry.period), element('h4', '', entry.organization), element('p', 'entry-role', entry.role));
+      if (entry.description) article.append(element('p', 'entry-description', entry.description));
+      return article;
+    }));
+  }
   byId('year').textContent = new Date().getFullYear();
   document.title = `${content.name} · Research & Notes`;
   byId('interests').replaceChildren(...content.interests.map((interest) => element('span', '', interest)));
