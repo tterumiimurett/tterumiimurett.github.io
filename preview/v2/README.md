@@ -9,7 +9,9 @@ Dark, typographic research portfolio inspired by the visual direction of https:/
 
 Edit content.js to change biography, papers, education, experience, personal interests and blog entries. The inline editor exports content.js; publishing requires updating preview/v2/content.js in GitHub. V2 has an independent content file, so later changes do not modify V1.
 
-The portrait uses an original WebGL halftone shader: gentle ambient waves, pointer trails, and stronger expanding rings on click or touch. The source photograph is unchanged. Motion OFF and reduced-motion preferences use a static CSS dotted portrait. Animation stops when the hero is offscreen or the tab is hidden. Unsupported WebGL, lost graphics contexts, and cross-origin images fall back to the CSS portrait. No microphone, tracking, or audio is used.
+The portrait uses an independently written WebGL point-particle renderer. Each dot keeps its own photographic tone while moving with the cursor's direction and momentum, then settles back onto its home grid. A slower trailing cursor and exponential velocity decay give the motion a liquid feel; only a small crest accompanies the flow. Clicks and touch add one restrained pulse, not overlapping high-amplitude rings. At rest the field is still. The implementation follows motion principles observed in hontran.dev's publicly served frontend, without bundling its code or assets.
+
+The source photograph is unchanged. Motion OFF and reduced-motion preferences use a static CSS dotted portrait. Animation stops when the hero is offscreen or the tab is hidden. Unsupported WebGL, lost graphics contexts, and cross-origin images fall back to the CSS portrait. No microphone, tracking, or audio is used. Pointer movement does not prevent touch scrolling.
 
 Berkeley course projects are excluded; the exchange education entry remains. proactive FD-benchmark stays unpublished. No email address or resume download is published.
 

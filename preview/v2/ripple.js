@@ -10,47 +10,50 @@
 
   const vertexSource = `
     attribute vec2 position;
-    void main() { gl_Position = vec4(position, 0.0, 1.0); }
+    attribute float tone;
+    uniform vec2 resolution;
+    uniform float clock;
+    uniform float pixelRatio;
+    uniform float spacing;
+    uniform vec2 cursor;
+    uniform vec2 velocity;
+    uniform float energy;
+    uniform float presence;
+    uniform vec3 tap;
+    varying float brightness;
+    void main() {
+      vec2 delta = position - cursor;
+      float distance = length(delta);
+      float radius = min(resolution.x * 0.46, 180.0 + energy * 100.0);
+      float weight = (1.0 - smoothstep(0.0, radius, distance)) * presence;
+      float speed = min(length(velocity) / 700.0, 1.0);
+      vec2 direction = velocity / max(length(velocity), 0.001);
+      vec2 normal = vec2(-direction.y, direction.x);
+      float side = dot(delta, normal) / max(distance, 1.0);
+      vec2 displacement = (direction + normal * side * 0.55) * weight * speed * 24.0;
+      float crest = sin(distance * 0.045 - clock * 6.0);
+      displacement += delta / max(distance, 1.0) * crest * weight * energy * 3.5;
+      float age = clock - tap.z;
+      if (age >= 0.0 && age < 3.0) {
+        vec2 tapDelta = position - tap.xy;
+        float tapDistance = length(tapDelta);
+        float front = tapDistance - age * 150.0;
+        float envelope = exp(-pow(front / 65.0, 2.0)) * exp(-age * 1.5);
+        displacement += tapDelta / max(tapDistance, 1.0) * sin(front * 0.045) * envelope * 5.0;
+      }
+      vec2 screen = (position + displacement) / resolution;
+      gl_Position = vec4(screen.x * 2.0 - 1.0, 1.0 - screen.y * 2.0, 0.0, 1.0);
+      brightness = clamp(tone * 1.12 + weight * speed * 0.10, 0.0, 1.0);
+      gl_PointSize = spacing * (0.36 + 0.48 * sqrt(tone)) * pixelRatio;
+    }
   `;
   const fragmentSource = `
     precision mediump float;
-    uniform sampler2D photo;
-    uniform vec2 resolution;
-    uniform vec2 crop;
-    uniform vec2 alignment;
-    uniform float clock;
-    uniform float pixelRatio;
-    uniform vec4 waves[8];
+    varying float brightness;
     void main() {
-      vec2 point = vec2(gl_FragCoord.x, resolution.y - gl_FragCoord.y) / pixelRatio;
-      vec2 size = resolution / pixelRatio;
-      vec2 displacement = vec2(0.0);
-      float crest = 0.0;
-      float ambientDistance = length(point - size * vec2(0.63, 0.42));
-      float ambient = sin(ambientDistance * 0.034 - clock * 1.7);
-      displacement += (point - size * vec2(0.63, 0.42)) / max(ambientDistance, 1.0) * ambient * 3.5;
-      for (int index = 0; index < 8; index++) {
-        float age = clock - waves[index].z;
-        vec2 delta = point - waves[index].xy;
-        float distance = length(delta);
-        float front = distance - age * 190.0;
-        float envelope = exp(-pow(front / 85.0, 2.0)) * exp(-age * 0.85);
-        float wave = sin(front * 0.072) * envelope * waves[index].w;
-        displacement += delta / max(distance, 1.0) * wave * 24.0;
-        crest += wave;
-      }
-      vec2 warped = point + displacement;
-      float spacing = size.x < 500.0 ? 4.0 : 5.0;
-      vec2 cell = (floor(warped / spacing) + 0.5) * spacing;
-      vec2 photoUv = cell / size * crop + (1.0 - crop) * alignment;
-      vec3 sampleColor = texture2D(photo, clamp(photoUv, 0.0, 1.0)).rgb;
-      float luminance = dot(sampleColor, vec3(0.299, 0.587, 0.114));
-      luminance = clamp((luminance - 0.5) * 1.1 + 0.55, 0.0, 1.0);
-      float radius = spacing * (0.18 + 0.25 * sqrt(luminance));
-      float dotMask = 1.0 - smoothstep(radius - 0.5, radius + 0.5, length(warped - cell));
-      vec3 background = vec3(0.067, 0.071, 0.063);
-      vec3 ink = vec3(0.93, 0.93, 0.90) * clamp(luminance * 1.3 + crest * 0.18, 0.0, 1.0);
-      gl_FragColor = vec4(mix(background, ink, dotMask), 1.0);
+      float distance = length(gl_PointCoord - 0.5);
+      float opacity = 1.0 - smoothstep(0.35, 0.5, distance);
+      gl_FragColor = vec4(vec3(0.93, 0.93, 0.90) * brightness, opacity);
     }
   `;
 
@@ -81,28 +84,26 @@
   graphics.useProgram(program);
   const buffer = graphics.createBuffer();
   graphics.bindBuffer(graphics.ARRAY_BUFFER, buffer);
-  graphics.bufferData(graphics.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), graphics.STATIC_DRAW);
   const position = graphics.getAttribLocation(program, 'position');
+  const tone = graphics.getAttribLocation(program, 'tone');
   graphics.enableVertexAttribArray(position);
-  graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 0, 0);
-  const uniforms = Object.fromEntries(['photo', 'resolution', 'crop', 'alignment', 'clock', 'pixelRatio', 'waves[0]'].map((name) => [name, graphics.getUniformLocation(program, name)]));
-  const texture = graphics.createTexture();
-  graphics.bindTexture(graphics.TEXTURE_2D, texture);
-  graphics.texParameteri(graphics.TEXTURE_2D, graphics.TEXTURE_WRAP_S, graphics.CLAMP_TO_EDGE);
-  graphics.texParameteri(graphics.TEXTURE_2D, graphics.TEXTURE_WRAP_T, graphics.CLAMP_TO_EDGE);
-  graphics.texParameteri(graphics.TEXTURE_2D, graphics.TEXTURE_MIN_FILTER, graphics.LINEAR);
-  graphics.texParameteri(graphics.TEXTURE_2D, graphics.TEXTURE_MAG_FILTER, graphics.LINEAR);
-  graphics.uniform1i(uniforms.photo, 0);
+  graphics.enableVertexAttribArray(tone);
+  graphics.vertexAttribPointer(position, 2, graphics.FLOAT, false, 12, 0);
+  graphics.vertexAttribPointer(tone, 1, graphics.FLOAT, false, 12, 8);
+  graphics.enable(graphics.BLEND);
+  graphics.blendFunc(graphics.SRC_ALPHA, graphics.ONE_MINUS_SRC_ALPHA);
+  graphics.clearColor(0.067, 0.071, 0.063, 1);
+  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'velocity', 'energy', 'presence', 'tap'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
-  const waves = new Float32Array(32);
-  let waveIndex = 0;
+  const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, deltaX: 0, deltaY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
+  const tap = new Float32Array([0, 0, -10]);
+  let pointCount = 0;
   let elapsed = 0;
   let previousFrame = 0;
   let frameId = 0;
   let ready = false;
   let visible = true;
   let lost = false;
-  let lastPointer = 0;
 
   function enabled() {
     return ready && visible && !lost && !document.hidden && !document.documentElement.classList.contains('motion-off');
@@ -111,32 +112,69 @@
   function resize() {
     const width = portrait.offsetWidth;
     const height = portrait.offsetHeight;
-    if (!width || !height || !portrait.naturalWidth) return;
-    const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
-    canvas.style.left = `${portrait.offsetLeft}px`;
-    canvas.style.top = `${portrait.offsetTop}px`;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    canvas.width = Math.round(width * ratio);
-    canvas.height = Math.round(height * ratio);
-    graphics.viewport(0, 0, canvas.width, canvas.height);
-    graphics.uniform2f(uniforms.resolution, canvas.width, canvas.height);
-    graphics.uniform1f(uniforms.pixelRatio, ratio);
-    const scale = Math.max(width / portrait.naturalWidth, height / portrait.naturalHeight);
-    graphics.uniform2f(uniforms.crop, width / (portrait.naturalWidth * scale), height / (portrait.naturalHeight * scale));
-    const alignment = getComputedStyle(portrait).objectPosition.split(' ').map((value) => parseFloat(value) / 100);
-    graphics.uniform2f(uniforms.alignment, alignment[0], alignment[1]);
+    if (lost || portrait.hidden || !width || !height || !portrait.naturalWidth) return;
+    try {
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.style.left = `${portrait.offsetLeft}px`;
+      canvas.style.top = `${portrait.offsetTop}px`;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      graphics.viewport(0, 0, canvas.width, canvas.height);
+      graphics.uniform2f(uniforms.resolution, width, height);
+      graphics.uniform1f(uniforms.pixelRatio, ratio);
+      const scale = Math.max(width / portrait.naturalWidth, height / portrait.naturalHeight);
+      const alignment = getComputedStyle(portrait).objectPosition.split(' ').map((value) => parseFloat(value) / 100);
+      const spacing = width < 500 ? 4.5 : 5.5;
+      const columns = Math.ceil(width / spacing);
+      const rows = Math.ceil(height / spacing);
+      const sampler = document.createElement('canvas');
+      sampler.width = columns;
+      sampler.height = rows;
+      const context = sampler.getContext('2d', { willReadFrequently: true });
+      context.drawImage(portrait, (width - portrait.naturalWidth * scale) * alignment[0] / spacing, (height - portrait.naturalHeight * scale) * alignment[1] / spacing, portrait.naturalWidth * scale / spacing, portrait.naturalHeight * scale / spacing);
+      const pixels = context.getImageData(0, 0, columns, rows).data;
+      const points = new Float32Array(columns * rows * 3);
+      for (let row = 0; row < rows; row++) {
+        for (let column = 0; column < columns; column++) {
+          const index = row * columns + column;
+          const luminance = (pixels[index * 4] * 0.299 + pixels[index * 4 + 1] * 0.587 + pixels[index * 4 + 2] * 0.114) / 255;
+          points.set([(column + 0.5) * spacing, (row + 0.5) * spacing, Math.min(1, Math.max(0, luminance * 1.1))], index * 3);
+        }
+      }
+      pointCount = columns * rows;
+      graphics.bufferData(graphics.ARRAY_BUFFER, points, graphics.STATIC_DRAW);
+      graphics.uniform1f(uniforms.spacing, spacing);
+    } catch { resetPhoto(); }
   }
 
   function draw(timestamp) {
     frameId = 0;
     if (!enabled()) return;
-    if (!previousFrame || timestamp - previousFrame >= 30) {
-      elapsed += previousFrame ? Math.min((timestamp - previousFrame) / 1000, 0.1) : 0;
+    if (!previousFrame || timestamp - previousFrame >= 15) {
+      const delta = previousFrame ? Math.min((timestamp - previousFrame) / 1000, 0.05) : 1 / 60;
+      elapsed += delta;
       previousFrame = timestamp;
+      const follow = 1 - Math.exp(-5.5 * delta);
+      pointer.trailX += (pointer.targetX - pointer.trailX) * follow;
+      pointer.trailY += (pointer.targetY - pointer.trailY) * follow;
+      pointer.presence += ((pointer.active ? 1 : 0) - pointer.presence) * (1 - Math.exp(-(pointer.active ? 8 : 3) * delta));
+      pointer.energy *= Math.exp(-2.2 * delta);
+      const moving = pointer.deltaX !== 0 || pointer.deltaY !== 0;
+      const momentum = 1 - Math.exp(-(moving ? 10 : 1.4) * delta);
+      pointer.velocityX += (pointer.deltaX / delta - pointer.velocityX) * momentum;
+      pointer.velocityY += (pointer.deltaY / delta - pointer.velocityY) * momentum;
+      pointer.deltaX = 0;
+      pointer.deltaY = 0;
       graphics.uniform1f(uniforms.clock, elapsed);
-      graphics.uniform4fv(uniforms['waves[0]'], waves);
-      graphics.drawArrays(graphics.TRIANGLES, 0, 3);
+      graphics.uniform2f(uniforms.cursor, pointer.trailX, pointer.trailY);
+      graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
+      graphics.uniform1f(uniforms.energy, pointer.energy);
+      graphics.uniform1f(uniforms.presence, pointer.presence);
+      graphics.uniform3fv(uniforms.tap, tap);
+      graphics.clear(graphics.COLOR_BUFFER_BIT);
+      graphics.drawArrays(graphics.POINTS, 0, pointCount);
     }
     frameId = requestAnimationFrame(draw);
   }
@@ -145,6 +183,8 @@
     if (frameId) cancelAnimationFrame(frameId);
     frameId = 0;
     previousFrame = 0;
+    pointer.active = false;
+    pointer.energy = pointer.presence = pointer.velocityX = pointer.velocityY = pointer.deltaX = pointer.deltaY = 0;
     if (enabled()) frameId = requestAnimationFrame(draw);
   }
 
@@ -158,29 +198,45 @@
     resetPhoto();
     if (lost || portrait.hidden || !portrait.naturalWidth) return;
     try {
-      graphics.texImage2D(graphics.TEXTURE_2D, 0, graphics.RGB, graphics.RGB, graphics.UNSIGNED_BYTE, portrait);
-      if (graphics.getError() !== graphics.NO_ERROR) return;
+      pointCount = 0;
       resize();
+      if (!pointCount || graphics.getError() !== graphics.NO_ERROR) return;
       ready = true;
       stage.classList.add('ripple-ready');
       syncMotion();
     } catch { resetPhoto(); }
   }
 
-  function addWave(event, strength) {
+  function movePointer(event) {
     if (!enabled() || event.target.closest('a, button, input')) return;
     const bounds = canvas.getBoundingClientRect();
-    const offset = waveIndex * 4;
-    waves.set([event.clientX - bounds.left, event.clientY - bounds.top, elapsed, strength], offset);
-    waveIndex = (waveIndex + 1) % 8;
+    const horizontal = event.clientX - bounds.left;
+    const vertical = event.clientY - bounds.top;
+    if (pointer.active) {
+      const deltaX = horizontal - pointer.targetX;
+      const deltaY = vertical - pointer.targetY;
+      pointer.deltaX += deltaX;
+      pointer.deltaY += deltaY;
+      pointer.energy = Math.min(1, pointer.energy + Math.hypot(deltaX, deltaY) * 0.005);
+    } else {
+      pointer.trailX = horizontal;
+      pointer.trailY = vertical;
+    }
+    pointer.targetX = horizontal;
+    pointer.targetY = vertical;
+    pointer.active = true;
   }
 
-  surface.addEventListener('pointermove', (event) => {
-    if (event.pointerType !== 'mouse' || event.timeStamp - lastPointer < 100) return;
-    lastPointer = event.timeStamp;
-    addWave(event, 0.6);
-  });
-  surface.addEventListener('pointerdown', (event) => addWave(event, 1.8));
+  surface.addEventListener('pointermove', movePointer, { passive: true });
+  surface.addEventListener('pointerdown', (event) => {
+    if (!enabled() || event.target.closest('a, button, input')) return;
+    movePointer(event);
+    tap.set([pointer.targetX, pointer.targetY, elapsed]);
+  }, { passive: true });
+  surface.addEventListener('pointerleave', () => { pointer.active = false; });
+  surface.addEventListener('pointercancel', () => { pointer.active = false; });
+  surface.addEventListener('pointerup', (event) => { if (event.pointerType !== 'mouse') pointer.active = false; });
+  window.addEventListener('blur', () => { pointer.active = false; });
   window.addEventListener('motionchange', syncMotion);
   document.addEventListener('visibilitychange', syncMotion);
   window.addEventListener('resize', resize);
