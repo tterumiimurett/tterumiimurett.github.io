@@ -19,7 +19,7 @@
     uniform vec2 velocity;
     uniform float energy;
     uniform float presence;
-    uniform vec3 tap;
+    uniform vec4 ripples[8];
     varying float brightness;
     void main() {
       vec2 delta = position - cursor;
@@ -33,17 +33,25 @@
       vec2 displacement = (direction + normal * side * 0.55) * weight * speed * 10.0;
       float crest = sin(distance * 0.045 - clock * 6.0);
       displacement += delta / max(distance, 1.0) * crest * weight * energy * 1.6;
-      float age = clock - tap.z;
-      if (age >= 0.0 && age < 3.0) {
-        vec2 tapDelta = position - tap.xy;
-        float tapDistance = length(tapDelta);
-        float front = tapDistance - age * 150.0;
-        float envelope = exp(-pow(front / 65.0, 2.0)) * exp(-age * 1.5);
-        displacement += tapDelta / max(tapDistance, 1.0) * sin(front * 0.045) * envelope * 2.0;
+      vec2 water = vec2(0.0);
+      float waterLight = 0.0;
+      for (int index = 0; index < 8; index++) {
+        float age = clock - ripples[index].z;
+        if (age >= 0.0 && age < 2.4 && ripples[index].w > 0.0) {
+          vec2 offset = position - ripples[index].xy;
+          float radius = length(offset);
+          float front = radius - age * 120.0;
+          float envelope = exp(-pow(front / 55.0, 2.0));
+          float life = smoothstep(0.0, 0.18, age) * (1.0 - smoothstep(0.8, 2.4, age));
+          float wave = sin(front * 0.065) * envelope * life * ripples[index].w;
+          water += offset / max(radius, 1.0) * wave * 7.0;
+          waterLight += wave * 0.10;
+        }
       }
+      displacement += water / max(1.0, length(water) / 10.0);
       vec2 screen = (position + displacement) / resolution;
       gl_Position = vec4(screen.x * 2.0 - 1.0, 1.0 - screen.y * 2.0, 0.0, 1.0);
-      brightness = clamp(tone * 1.12 + weight * speed * 0.035, 0.0, 1.0);
+      brightness = clamp(tone * 1.12 + weight * speed * 0.035 + clamp(waterLight, -0.10, 0.10), 0.0, 1.0);
       gl_PointSize = spacing * (0.36 + 0.48 * sqrt(tone)) * pixelRatio;
     }
   `;
@@ -93,10 +101,14 @@
   graphics.enable(graphics.BLEND);
   graphics.blendFunc(graphics.SRC_ALPHA, graphics.ONE_MINUS_SRC_ALPHA);
   graphics.clearColor(0.067, 0.071, 0.063, 1);
-  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'velocity', 'energy', 'presence', 'tap'].map((name) => [name, graphics.getUniformLocation(program, name)]));
+  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'velocity', 'energy', 'presence', 'ripples[0]'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
   const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, sampleTime: null, sampleInterval: 16.7, inputVelocityX: 0, inputVelocityY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
-  const tap = new Float32Array([0, 0, -10]);
+  const ripples = new Float32Array(32);
+  let rippleIndex = 0;
+  let lastRippleTime = -10;
+  let lastRippleX = 0;
+  let lastRippleY = 0;
   let pointCount = 0;
   let elapsed = 0;
   let previousFrame = 0;
@@ -165,12 +177,15 @@
     pointer.velocityY += ((moving ? pointer.inputVelocityY : 0) - pointer.velocityY) * momentum;
     const targetEnergy = moving ? Math.min(1, Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) / 650) : 0;
     pointer.energy += (targetEnergy - pointer.energy) * (1 - Math.exp(-(moving ? 8 : 2.2) * delta));
+    if (moving && Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) > 25 && elapsed - lastRippleTime >= 0.32 && (elapsed - lastRippleTime > 2.4 || Math.hypot(pointer.trailX - lastRippleX, pointer.trailY - lastRippleY) > 45)) {
+      addRipple(pointer.trailX, pointer.trailY, 0.85);
+    }
     graphics.uniform1f(uniforms.clock, elapsed);
     graphics.uniform2f(uniforms.cursor, pointer.trailX, pointer.trailY);
     graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
     graphics.uniform1f(uniforms.energy, pointer.energy);
     graphics.uniform1f(uniforms.presence, pointer.presence);
-    graphics.uniform3fv(uniforms.tap, tap);
+    graphics.uniform4fv(uniforms['ripples[0]'], ripples);
     graphics.clear(graphics.COLOR_BUFFER_BIT);
     graphics.drawArrays(graphics.POINTS, 0, pointCount);
     frameId = requestAnimationFrame(draw);
@@ -180,6 +195,8 @@
     if (frameId) cancelAnimationFrame(frameId);
     frameId = 0;
     previousFrame = 0;
+    ripples.fill(0);
+    lastRippleTime = -10;
     pointer.active = false;
     pointer.sampleTime = null;
     pointer.energy = pointer.presence = pointer.velocityX = pointer.velocityY = pointer.inputVelocityX = pointer.inputVelocityY = 0;
@@ -237,11 +254,19 @@
     }
   }
 
+  function addRipple(horizontal, vertical, strength) {
+    ripples.set([horizontal, vertical, elapsed, strength], rippleIndex * 4);
+    rippleIndex = (rippleIndex + 1) % 8;
+    lastRippleTime = elapsed;
+    lastRippleX = horizontal;
+    lastRippleY = vertical;
+  }
+
   surface.addEventListener('pointermove', movePointer, { passive: true });
   surface.addEventListener('pointerdown', (event) => {
     if (!enabled() || event.target.closest('a, button, input')) return;
     movePointer(event);
-    tap.set([pointer.targetX, pointer.targetY, elapsed]);
+    addRipple(pointer.targetX, pointer.targetY, 1);
   }, { passive: true });
   surface.addEventListener('pointerleave', () => { pointer.active = false; });
   surface.addEventListener('pointercancel', () => { pointer.active = false; });
