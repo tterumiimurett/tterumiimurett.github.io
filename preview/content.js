@@ -2,7 +2,7 @@ window.siteContent = {
   "name": "Terumi Chiba",
   "headline": "Exploring the space between speech, language, and intelligent systems.",
   "bio": "Welcome to my corner of the internet. Here I collect my research, projects, and notes on machine learning, mathematics, and science.",
-  "portrait": "",
+  "portrait": "images/portrait.jpg",
   "email": "",
   "interests": ["Speech & language", "LLM agents", "Evaluation"],
   "papers": [
