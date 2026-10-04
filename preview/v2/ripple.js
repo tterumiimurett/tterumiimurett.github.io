@@ -19,6 +19,7 @@
     uniform vec2 velocity;
     uniform float energy;
     uniform float presence;
+    uniform float idleStrength;
     uniform vec4 ripples[8];
     varying float brightness;
     void main() {
@@ -49,9 +50,14 @@
         }
       }
       displacement += water / max(1.0, length(water) / 10.0);
+      vec2 idleOffset = position - resolution * vec2(0.56, 0.48);
+      float idleDistance = length(idleOffset);
+      float idleWave = sin(idleDistance * 0.033 - clock * 1.1);
+      float idleSecondary = sin(position.y * 0.024 + position.x * 0.012 - clock * 0.8);
+      displacement += (idleOffset / max(idleDistance, 1.0) * idleWave * 1.4 + vec2(0.4, 0.7) * idleSecondary * 0.65) * idleStrength;
       vec2 screen = (position + displacement) / resolution;
       gl_Position = vec4(screen.x * 2.0 - 1.0, 1.0 - screen.y * 2.0, 0.0, 1.0);
-      brightness = clamp(tone * 1.12 + weight * speed * 0.035 + clamp(waterLight, -0.10, 0.10), 0.0, 1.0);
+      brightness = clamp(tone * 1.12 + weight * speed * 0.035 + clamp(waterLight, -0.10, 0.10) + idleWave * idleStrength * 0.016, 0.0, 1.0);
       gl_PointSize = spacing * (0.36 + 0.48 * sqrt(tone)) * pixelRatio;
     }
   `;
@@ -101,7 +107,7 @@
   graphics.enable(graphics.BLEND);
   graphics.blendFunc(graphics.SRC_ALPHA, graphics.ONE_MINUS_SRC_ALPHA);
   graphics.clearColor(0.067, 0.071, 0.063, 1);
-  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'velocity', 'energy', 'presence', 'ripples[0]'].map((name) => [name, graphics.getUniformLocation(program, name)]));
+  const uniforms = Object.fromEntries(['resolution', 'clock', 'pixelRatio', 'spacing', 'cursor', 'velocity', 'energy', 'presence', 'idleStrength', 'ripples[0]'].map((name) => [name, graphics.getUniformLocation(program, name)]));
 
   const pointer = { active: false, targetX: 0, targetY: 0, trailX: 0, trailY: 0, sampleTime: null, sampleInterval: 16.7, inputVelocityX: 0, inputVelocityY: 0, velocityX: 0, velocityY: 0, energy: 0, presence: 0 };
   const ripples = new Float32Array(32);
@@ -111,6 +117,8 @@
   let lastRippleY = 0;
   let pointCount = 0;
   let elapsed = 0;
+  let idleTime = 0;
+  let idleStrength = 0;
   let previousFrame = 0;
   let frameId = 0;
   let ready = false;
@@ -172,6 +180,9 @@
     pointer.trailY += (pointer.targetY - pointer.trailY) * follow;
     pointer.presence += ((pointer.active ? 1 : 0) - pointer.presence) * (1 - Math.exp(-(pointer.active ? 8 : 3) * delta));
     const moving = pointer.active && pointer.sampleTime !== null && timestamp - pointer.sampleTime < Math.min(100, Math.max(50, pointer.sampleInterval * 2));
+    idleTime = moving && Math.hypot(pointer.inputVelocityX, pointer.inputVelocityY) > 3 ? 0 : idleTime + delta;
+    const idleTarget = idleTime > 1.2 ? 1 : 0;
+    idleStrength += (idleTarget - idleStrength) * (1 - Math.exp(-(idleTarget ? 1.2 : 5) * delta));
     const momentum = 1 - Math.exp(-(moving ? 10 : 1.4) * delta);
     pointer.velocityX += ((moving ? pointer.inputVelocityX : 0) - pointer.velocityX) * momentum;
     pointer.velocityY += ((moving ? pointer.inputVelocityY : 0) - pointer.velocityY) * momentum;
@@ -185,6 +196,7 @@
     graphics.uniform2f(uniforms.velocity, pointer.velocityX, pointer.velocityY);
     graphics.uniform1f(uniforms.energy, pointer.energy);
     graphics.uniform1f(uniforms.presence, pointer.presence);
+    graphics.uniform1f(uniforms.idleStrength, idleStrength);
     graphics.uniform4fv(uniforms['ripples[0]'], ripples);
     graphics.clear(graphics.COLOR_BUFFER_BIT);
     graphics.drawArrays(graphics.POINTS, 0, pointCount);
@@ -195,6 +207,7 @@
     if (frameId) cancelAnimationFrame(frameId);
     frameId = 0;
     previousFrame = 0;
+    idleTime = idleStrength = 0;
     ripples.fill(0);
     lastRippleTime = -10;
     pointer.active = false;
@@ -266,6 +279,7 @@
   surface.addEventListener('pointerdown', (event) => {
     if (!enabled() || event.target.closest('a, button, input')) return;
     movePointer(event);
+    idleTime = 0;
     addRipple(pointer.targetX, pointer.targetY, 1);
   }, { passive: true });
   surface.addEventListener('pointerleave', () => { pointer.active = false; });
