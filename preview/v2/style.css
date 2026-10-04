@@ -7,5 +7,11 @@
 .hero{min-height:720px}
 h1{font-size:clamp(80px,19.8vw,310px)}
 .portrait img{filter:grayscale(1) contrast(1.1) brightness(1.05)}
+.portrait canvas{position:absolute;pointer-events:none;display:none;mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}
+.portrait.ripple-ready canvas{display:block}
+.portrait.ripple-ready img{opacity:0}
+.portrait img{transform:none;transition:none}
+.motion-off .portrait canvas{display:none}
+.motion-off .portrait.ripple-ready img{opacity:1}
 @media(max-width:600px){h1{font-size:19vw}.hero{min-height:760px}.display{font-size:clamp(40px,11.3vw,57px)}.edit-button{bottom:12px;font-size:12px;padding:7px 12px}.hero-bottom{bottom:60px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}.reveal-pending{opacity:1;transform:none}.portrait img{transform:none}}

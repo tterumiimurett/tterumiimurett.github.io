@@ -6,18 +6,12 @@ function updateMotion() {
   motionButton.textContent = motionEnabled ? '[ MOTION ON ]' : '[ MOTION OFF ]';
   motionButton.setAttribute('aria-pressed', String(!motionEnabled));
   motionButton.setAttribute('aria-label', motionEnabled ? 'Pause animations' : 'Enable animations');
+  window.dispatchEvent(new Event('motionchange'));
 }
 motionButton.addEventListener('click', () => { motionEnabled = !motionEnabled; updateMotion(); });
 motionPreference.addEventListener('change', () => { motionEnabled = !motionPreference.matches; updateMotion(); });
 updateMotion();
 const hero = document.querySelector('.hero');
-hero.addEventListener('pointermove', (event) => {
-  if (!motionEnabled || event.pointerType !== 'mouse') return;
-  const bounds = hero.getBoundingClientRect();
-  hero.style.setProperty('--move-x', `${((event.clientX - bounds.left) / bounds.width - .5) * 18}px`);
-  hero.style.setProperty('--move-y', `${((event.clientY - bounds.top) / bounds.height - .5) * 10}px`);
-});
-hero.addEventListener('pointerleave', () => { hero.style.setProperty('--move-x', '0px'); hero.style.setProperty('--move-y', '0px'); });
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
