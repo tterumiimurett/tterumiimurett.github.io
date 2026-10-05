@@ -88,3 +88,18 @@ html{scroll-padding-top:0}
 .portrait-target>.photo-window{overflow:hidden;pointer-events:none}
 .photo-window>.full-photo{position:absolute;display:block;max-width:none;left:var(--source-left);top:var(--source-top);width:var(--source-width);height:var(--source-height);object-fit:fill;opacity:1;filter:none;mask:none;transform:none;user-select:none;-webkit-user-select:none}
 @media(max-width:700px){.portrait-target{--source-width:155%;--source-height:155%;--source-left:-33%;--source-top:-26.4%}}
+
+/* Mobile cover is a normal-flow photograph, never a sticky animation layer. */
+@media(max-width:700px){
+ .portrait-story{display:block;overflow:visible}
+ .story-visual{position:relative;top:auto;height:auto;margin:0;padding:112px 6% 0;z-index:auto;pointer-events:auto}
+ .story-visual:before{display:none}
+ .portrait-frame{position:static;inset:auto;width:100%;height:auto;transform:none}
+ .portrait-target{position:static;width:100%;aspect-ratio:auto;transform:none}
+ .portrait-target>.photo-window{position:static;width:100%;height:auto;opacity:1!important;mask:none;-webkit-mask:none;overflow:hidden}
+ .photo-window>.full-photo{position:static;width:100%;height:auto;object-fit:contain;transform:none}
+ .particle-surface.hero,.reveal-control{display:none!important}
+ .intro-panel{min-height:0;padding:30px 6% 42px;pointer-events:auto}
+ .intro-panel .hero-bottom{position:static;margin-top:32px;left:auto;right:auto;bottom:auto}
+ .about-panel.about-section{min-height:0;padding:60px 8% 65px;pointer-events:auto}
+}

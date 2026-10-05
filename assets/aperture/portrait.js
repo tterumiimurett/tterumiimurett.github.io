@@ -1,4 +1,4 @@
-(() => {
+(function initPortrait() {
   'use strict';
   // Color in Motion's local wave, transport, and inertia are retained from Still V3.
   // Moving particle apertures reveal a fixed photographic plane at their current pixels.
@@ -8,6 +8,17 @@
   const story = document.getElementById('portrait-story');
   const target = document.querySelector('.portrait-target');
   if (!stage || !portrait || !surface || !story || !target || stage.querySelector('canvas[data-paper-portrait]')) return;
+  const mobile = matchMedia('(max-width: 700px)');
+  if (mobile.matches) {
+    stage.dataset.renderer = 'mobile-static';
+    const startDesktop = () => {
+      if (mobile.matches) return;
+      mobile.removeEventListener('change', startDesktop);
+      initPortrait();
+    };
+    mobile.addEventListener('change', startDesktop);
+    return;
+  }
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const clamp = (value, low = 0, high = 1) => Math.max(low, Math.min(high, value));
   function staticPhoto(reason = 'static') {
@@ -214,7 +225,7 @@
   let lastIntentY = null;
   let touchDown = null;
   function motionStopped() {
-    return reduced.matches || document.documentElement.classList.contains('motion-off');
+    return mobile.matches || reduced.matches || document.documentElement.classList.contains('motion-off');
   }
   function enabled() {
     return ready && active && visible && !lost && !document.hidden && !motionStopped();
@@ -278,6 +289,7 @@
     return ((value ^ (value >>> 16)) >>> 0) / 4294967296;
   }
   function resize() {
+    if (mobile.matches) return;
     const width = stage.offsetWidth;
     const height = stage.offsetHeight;
     if (lost || !width || !height || !portrait.naturalWidth) return;
@@ -543,6 +555,7 @@
   });
   window.addEventListener('motionchange', syncMotion);
   reduced.addEventListener('change', syncMotion);
+  mobile.addEventListener('change', () => { syncMotion(); scheduleResize(); });
   document.addEventListener('visibilitychange', syncMotion);
   window.addEventListener('resize', scheduleResize);
   if ('ResizeObserver' in window) {
