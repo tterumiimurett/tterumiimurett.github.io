@@ -6,7 +6,7 @@ html{scroll-padding-top:0}
 .portrait-frame>.full-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% 45%;display:block;opacity:var(--photo-opacity,1);mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.35) 12%,#000 37%,#000 75%,rgba(0,0,0,.5) 89%,transparent),linear-gradient(transparent,rgba(0,0,0,.45) 14%,#000 31%,#000 69%,rgba(0,0,0,.45) 86%,transparent),radial-gradient(ellipse 70% 68% at 62% 49%,#000 33%,rgba(0,0,0,.9) 52%,rgba(0,0,0,.35) 77%,transparent 100%);mask-composite:intersect}
 .particle-surface.hero{position:absolute;inset:0;height:100%;min-height:0;max-height:none;padding:0;overflow:visible;isolation:auto;background:transparent;opacity:var(--particle-opacity,1)}
 .particle-surface .portrait{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
-.particle-surface .portrait>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% 45%;opacity:0;filter:none;mask:none;transform:none;transition:none}
+.particle-surface .portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% 45%;opacity:0;filter:none;mask:none;transform:none;transition:none}
 .particle-surface .portrait canvas{position:absolute;display:none;pointer-events:none;z-index:1;mask:none}
 .particle-surface .portrait.ripple-ready canvas{display:block}
 .particle-surface .portrait-fade{display:none}
@@ -68,7 +68,7 @@ html{scroll-padding-top:0}
 .particle-surface.hero{opacity:1;pointer-events:none}
 .particle-surface .portrait{overflow:visible;pointer-events:none}
 .particle-surface .portrait canvas{mask-image:linear-gradient(transparent 45px,#000 160px,#000 calc(100% - 25px),transparent);mask-composite:add}
-.particle-surface .portrait>img{object-fit:contain;object-position:50% 50%}
+.particle-surface .portrait img{object-fit:contain;object-position:50% 50%}
 .portrait-target{position:absolute;left:43.3vw;top:50%;width:min(55.62vw,calc(102.354svh - 85px));aspect-ratio:4 / 3;transform:translateY(-50%);pointer-events:none}
 .portrait-target>.photo-window{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;opacity:var(--photo-opacity,1);mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.35) 12%,#000 37%,#000 75%,rgba(0,0,0,.5) 89%,transparent),linear-gradient(transparent,rgba(0,0,0,.45) 14%,#000 31%,#000 69%,rgba(0,0,0,.45) 86%,transparent),radial-gradient(ellipse 70% 68% at 62% 49%,#000 33%,rgba(0,0,0,.9) 52%,rgba(0,0,0,.35) 77%,transparent 100%),radial-gradient(circle at var(--reveal-x,50%) var(--reveal-y,50%),#000 max(0px,calc(var(--reveal-radius,200vmax) - var(--reveal-softness,55px))),transparent var(--reveal-radius,200vmax));mask-composite:intersect}
 .intro-panel,.about-panel.about-section{position:relative;z-index:2;pointer-events:none}
@@ -86,7 +86,7 @@ html{scroll-padding-top:0}
 /* The source photograph stays at one scale; this softly edged window crops it. */
 .portrait-target{--source-width:185%;--source-height:185%;--source-left:-51%;--source-top:-40.8%}
 .portrait-target>.photo-window{overflow:hidden;pointer-events:none}
-.photo-window>.full-photo{position:absolute;display:block;max-width:none;left:var(--source-left);top:var(--source-top);width:var(--source-width);height:var(--source-height);object-fit:fill;opacity:1;filter:none;mask:none;transform:none;user-select:none;-webkit-user-select:none}
+.photo-window .full-photo{position:absolute;display:block;max-width:none;left:var(--source-left);top:var(--source-top);width:var(--source-width);height:var(--source-height);object-fit:fill;opacity:1;filter:none;mask:none;transform:none;user-select:none;-webkit-user-select:none}
 @media(max-width:700px){.portrait-target{--source-width:155%;--source-height:155%;--source-left:-33%;--source-top:-26.4%}}
 
 /* Mobile cover is a normal-flow photograph, never a sticky animation layer. */
@@ -96,8 +96,8 @@ html{scroll-padding-top:0}
  .story-visual:before{display:none}
  .portrait-frame{position:static;inset:auto;width:100%;height:auto;transform:none}
  .portrait-target{position:static;width:100%;aspect-ratio:auto;transform:none}
- .portrait-target>.photo-window{position:relative;width:100%;height:auto;aspect-ratio:4 / 3;opacity:1!important;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 19%,#000 81%,transparent),linear-gradient(transparent,#000 20%,#000 76%,transparent);mask-composite:intersect;-webkit-mask-composite:source-in}
- .photo-window>.full-photo{position:static;width:100%;height:auto;object-fit:contain;transform:scale(1.35);transform-origin:60% 48%}
+ .portrait-target>.photo-window{position:relative;width:100%;height:auto;aspect-ratio:4 / 3;opacity:1!important;overflow:hidden;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 44%,rgba(0,0,0,.85) 62%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 44%,rgba(0,0,0,.85) 62%,transparent 100%);mask-composite:add}
+ .photo-window .full-photo{position:static;width:100%;height:auto;object-fit:contain;transform:scale(1.35);transform-origin:60% 48%}
  .particle-surface.hero,.reveal-control{display:none!important}
  .intro-panel{min-height:0;padding:30px 6% 42px;pointer-events:auto}
  .intro-panel .hero-bottom{position:static;margin-top:32px;left:auto;right:auto;bottom:auto}
