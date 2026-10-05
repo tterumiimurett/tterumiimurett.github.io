@@ -1,0 +1,90 @@
+/* One shared portrait stays in the viewport through the first two panels. */
+html{scroll-padding-top:0}
+.portrait-story{position:relative;display:grid;grid-template-columns:46% 54%;grid-template-rows:auto auto;isolation:isolate}
+.story-visual{position:sticky;top:0;grid-column:2;grid-row:1 / 3;align-self:start;height:100svh;z-index:2;pointer-events:none}
+.portrait-frame{position:absolute;top:max(120px,16svh);left:4%;right:9%;height:calc(100svh - 200px);margin:0;overflow:visible;background:transparent;pointer-events:auto}
+.portrait-frame>.full-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% 45%;display:block;opacity:var(--photo-opacity,1);mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.35) 12%,#000 37%,#000 75%,rgba(0,0,0,.5) 89%,transparent),linear-gradient(transparent,rgba(0,0,0,.45) 14%,#000 31%,#000 69%,rgba(0,0,0,.45) 86%,transparent),radial-gradient(ellipse 70% 68% at 62% 49%,#000 33%,rgba(0,0,0,.9) 52%,rgba(0,0,0,.35) 77%,transparent 100%);mask-composite:intersect}
+.particle-surface.hero{position:absolute;inset:0;height:100%;min-height:0;max-height:none;padding:0;overflow:visible;isolation:auto;background:transparent;opacity:var(--particle-opacity,1)}
+.particle-surface .portrait{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
+.particle-surface .portrait>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% 45%;opacity:0;filter:none;mask:none;transform:none;transition:none}
+.particle-surface .portrait canvas{position:absolute;display:none;pointer-events:none;z-index:1;mask:none}
+.particle-surface .portrait.ripple-ready canvas{display:block}
+.particle-surface .portrait-fade{display:none}
+.motion-off .particle-surface .portrait canvas{display:none}
+.intro-panel{grid-column:1;grid-row:1;position:relative;min-height:100svh;padding:125px 0 110px 4.8vw;display:flex;align-items:center}
+.intro-copy{width:100%;padding-right:2.5vw}
+.intro-panel .hero-title .eyebrow{margin-bottom:23px}
+.intro-panel h1{font:400 clamp(58px,6.8vw,104px)/1 Smiley,'Arial Narrow',sans-serif;letter-spacing:-.035em;white-space:nowrap}
+.intro-panel .hero-intro{position:static;margin-top:35px}
+.intro-panel .hero-intro>p{font:400 clamp(23px,2.2vw,34px)/1.5 var(--serif)}
+.intro-panel .hero-bottom{left:4.8vw;right:3vw;bottom:30px;gap:14px}
+.intro-panel .hero-bottom>span{font-size:12px}
+.about-panel.about-section{grid-column:1;grid-row:2;display:block;width:100%;max-width:none;min-height:100svh;margin:0;padding:90px 3.5vw 90px 4.8vw}
+.about-panel h2{font-size:clamp(39px,4.3vw,62px);margin-top:20px}
+.about-panel .about-copy{margin-top:30px}
+.about-panel .about-copy>p{font-size:17px;line-height:1.85}
+.about-panel .about-copy>p+p{font-size:15px;line-height:1.85;margin-top:20px}
+.about-panel .background{margin-top:27px}
+.about-panel .history{grid-template-columns:1fr;gap:23px}
+.about-panel .about-copy p.outside{font-size:13px;line-height:1.8;margin-top:25px}
+@media(min-width:1600px){.portrait-frame{left:6%;right:12%;top:15svh;height:70svh}.intro-panel{padding-left:6vw}.intro-panel .hero-bottom{left:6vw}.about-panel.about-section{padding-left:6vw;padding-right:5vw}}
+@media(min-width:701px) and (max-width:1000px){.portrait-story{grid-template-columns:47% 53%}.portrait-frame{left:3%;right:8%;top:135px;height:calc(100svh - 225px)}.intro-panel h1{font-size:6.7vw}.intro-panel .hero-intro>p{font-size:24px}.intro-panel .hero-bottom>span{font-size:10px}.about-panel.about-section{padding-right:3vw}.about-panel .about-copy>p{font-size:16px}}
+@media(max-width:700px){
+  .portrait-story{display:block;--photo-top:125px;--photo-height:min(34svh,310px);--copy-top:calc(var(--photo-top) + var(--photo-height) + 30px)}
+  .story-visual{top:0;height:100svh;margin-bottom:-100svh;z-index:3}
+  .story-visual:before{content:'';position:absolute;inset:0 0 auto;height:calc(var(--photo-top) + var(--photo-height) + 13px);background:var(--paper);z-index:-1}
+  .portrait-frame{top:var(--photo-top);height:var(--photo-height);left:6%;right:6%;max-height:none}
+  .intro-panel{display:block;min-height:100svh;padding:var(--copy-top) 6% 105px}
+  .intro-copy{padding:0}
+  .intro-panel .hero-title .eyebrow{font-size:9px;margin-bottom:12px}
+  .intro-panel h1{font-size:clamp(39px,12.4vw,68px);line-height:1}
+  .intro-panel .hero-intro{margin-top:20px}
+  .intro-panel .hero-intro>p{font-size:19px;line-height:1.4}
+  .intro-panel .hero-intro>p br{display:none}
+  .intro-panel .hero-intro .text-link{margin-top:12px}
+  .intro-panel .hero-bottom{left:6%;right:6%;bottom:20px}
+  .intro-panel .hero-bottom>span{font-size:10px}
+  .about-panel.about-section{min-height:100svh;padding:var(--copy-top) 8% 65px}
+  .about-panel .eyebrow{font-size:10px}
+  .about-panel h2{font-size:42px;margin-top:16px}
+  .about-panel .about-copy{margin-top:25px}
+  .about-panel .about-copy>p{font-size:16px;line-height:1.85}
+  .about-panel .about-copy>p+p{font-size:15px}
+}
+@media(max-width:360px){.portrait-story{--photo-top:122px;--photo-height:31svh;--copy-top:calc(var(--photo-top) + var(--photo-height) + 25px)}.intro-panel h1{font-size:39px}.intro-panel .hero-intro>p{font-size:18px}.about-panel h2{font-size:38px}}
+@media(prefers-reduced-motion:reduce){.particle-surface{opacity:0!important}}
+
+/* Preserve the source photograph's complete aspect ratio at every endpoint. */
+@media(min-width:701px){.portrait-frame{top:50%;left:-5%;right:auto;width:min(103%,calc(102.354svh - 85px));height:auto;aspect-ratio:1000 / 977;transform:translateY(-50%)}}
+@media(max-width:700px){.portrait-frame{left:50%;right:auto;width:min(calc(var(--photo-height) * 1.02354145),88vw);height:auto;aspect-ratio:1000 / 977;transform:translateX(-50%)}}
+@media(min-width:701px){.about-panel.about-section{display:flex;flex-direction:column;justify-content:center}}
+@media(max-width:700px){.portrait-story{--photo-height:min(38svh,330px,85.98vw)}}
+@media(max-width:360px){.portrait-story{--photo-height:min(35svh,85.98vw)}}
+
+/* A full viewport field gathers into the same quiet portrait beside About. */
+.portrait-story{overflow:clip}
+.story-visual{grid-column:1 / -1;width:100%;z-index:1;pointer-events:none}
+.portrait-frame{user-select:none;-webkit-user-select:none;inset:0;left:0;top:0;right:0;width:100%;height:100%;aspect-ratio:auto;transform:none;pointer-events:none}
+.particle-surface.hero{opacity:1;pointer-events:none}
+.particle-surface .portrait{overflow:visible;pointer-events:none}
+.particle-surface .portrait canvas{mask-image:linear-gradient(transparent 45px,#000 160px,#000 calc(100% - 25px),transparent);mask-composite:add}
+.particle-surface .portrait>img{object-fit:contain;object-position:50% 50%}
+.portrait-target{position:absolute;left:43.3vw;top:50%;width:min(55.62vw,calc(102.354svh - 85px));aspect-ratio:4 / 3;transform:translateY(-50%);pointer-events:none}
+.portrait-target>.photo-window{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;opacity:var(--photo-opacity,1);mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.35) 12%,#000 37%,#000 75%,rgba(0,0,0,.5) 89%,transparent),linear-gradient(transparent,rgba(0,0,0,.45) 14%,#000 31%,#000 69%,rgba(0,0,0,.45) 86%,transparent),radial-gradient(ellipse 70% 68% at 62% 49%,#000 33%,rgba(0,0,0,.9) 52%,rgba(0,0,0,.35) 77%,transparent 100%),radial-gradient(circle at var(--reveal-x,50%) var(--reveal-y,50%),#000 max(0px,calc(var(--reveal-radius,200vmax) - var(--reveal-softness,55px))),transparent var(--reveal-radius,200vmax));mask-composite:intersect}
+.intro-panel,.about-panel.about-section{position:relative;z-index:2;pointer-events:none}
+.intro-copy,.hero-bottom>*:not(span),.about-panel>div{pointer-events:auto}
+.reveal-control{position:absolute;top:calc(100% + 16px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:18px;font:12px var(--sans);color:var(--muted);min-height:44px;white-space:nowrap;pointer-events:auto;border-bottom:1px solid var(--line)}
+.touch-label{display:none}
+@media(hover:none){.pointer-label{display:none}.touch-label{display:inline}}
+@media(max-width:700px){
+ .story-visual{z-index:3}
+ .portrait-frame{left:0;right:0;top:0;width:100%;max-width:none;height:100%;transform:none}
+ .portrait-target{left:50%;top:var(--photo-top);width:min(88vw,440px);transform:translateX(-50%)}
+ .reveal-control{top:100%;min-height:36px;font-size:11px}
+}
+
+/* The source photograph stays at one scale; this softly edged window crops it. */
+.portrait-target{--source-width:185%;--source-height:185%;--source-left:-51%;--source-top:-40.8%}
+.portrait-target>.photo-window{overflow:hidden;pointer-events:none}
+.photo-window>.full-photo{position:absolute;display:block;max-width:none;left:var(--source-left);top:var(--source-top);width:var(--source-width);height:var(--source-height);object-fit:fill;opacity:1;filter:none;mask:none;transform:none;user-select:none;-webkit-user-select:none}
+@media(max-width:700px){.portrait-target{--source-width:155%;--source-height:155%;--source-left:-33%;--source-top:-26.4%}}
