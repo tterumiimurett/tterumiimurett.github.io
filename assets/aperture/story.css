@@ -96,8 +96,8 @@ html{scroll-padding-top:0}
  .story-visual:before{display:none}
  .portrait-frame{position:static;inset:auto;width:100%;height:auto;transform:none}
  .portrait-target{position:static;width:100%;aspect-ratio:auto;transform:none}
- .portrait-target>.photo-window{position:static;width:100%;height:auto;opacity:1!important;mask:none;-webkit-mask:none;overflow:hidden}
- .photo-window>.full-photo{position:static;width:100%;height:auto;object-fit:contain;transform:none}
+ .portrait-target>.photo-window{position:relative;width:100%;height:auto;aspect-ratio:4 / 3;opacity:1!important;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 19%,#000 81%,transparent),linear-gradient(transparent,#000 20%,#000 76%,transparent);mask-composite:intersect;-webkit-mask-composite:source-in}
+ .photo-window>.full-photo{position:static;width:100%;height:auto;object-fit:contain;transform:scale(1.35);transform-origin:60% 48%}
  .particle-surface.hero,.reveal-control{display:none!important}
  .intro-panel{min-height:0;padding:30px 6% 42px;pointer-events:auto}
  .intro-panel .hero-bottom{position:static;margin-top:32px;left:auto;right:auto;bottom:auto}
