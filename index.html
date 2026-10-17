@@ -11,12 +11,13 @@
   <link rel="preload" href="assets/aperture/SmileySans-Oblique.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/aperture/style.css"><link rel="stylesheet" href="assets/aperture/story.css?v=mobile-fast-3">
   <script src="assets/aperture/content.js" defer></script><script src="assets/aperture/app.js" defer></script><script src="assets/aperture/portrait.js?v=mobile-static-1" defer></script><script src="assets/aperture/story.js" defer></script>
+  <link rel="stylesheet" href="assets/blog/home-blogs.css">
 </head>
 <body>
   <a class="skip" href="#about">Skip to about me</a>
   <header class="header">
     <a class="identity" href="#top" aria-label="Terumi Chiba — home"><span class="crest crest-small" aria-hidden="true"></span><span lang="zh-CN">旭海</span></a>
-    <nav aria-label="Main navigation"><a href="#about">About</a><a href="#work">Work</a><a href="#contact">Contact</a></nav>
+    <nav aria-label="Main navigation"><a href="#about">About</a><a href="#work">Work</a><a href="#blogs">Blogs</a><a href="#contact">Contact</a></nav>
     <div class="header-tools"><button id="motion-toggle" class="motion-toggle" type="button" aria-label="Pause motion" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5v10M13 5v10"/></svg></button></div>
   </header>
   <main>
@@ -44,6 +45,10 @@
       <p id="work-status" class="sr-only" role="status" aria-live="polite"></p>
       <noscript><div class="no-script-work"><a href="https://arxiv.org/abs/2609.38867">Talk2Agent</a><a href="https://arxiv.org/abs/2605.10027">Speech-based Psychological Crisis Assessment using LLMs</a><p>Full-duplex dialogue · ByteDance<br>Visual inspection · Shiyuan Technology</p></div></noscript>
     </section>
+    <section id="blogs" class="blogs-section" aria-labelledby="blogs-heading">
+  <div class="blogs-heading"><p class="eyebrow">03 / BLOGS</p><h2 id="blogs-heading">Notes along<br><em>the way.</em></h2></div>
+  <div class="blog-list"><a class="blog-entry" href="blog/anthropic-j-space/"><span class="blog-number">01</span><div><p class="eyebrow">LEARNING NOTES · 2026.10.15</p><h3 lang="zh-CN">J-Space 学习笔记</h3><p lang="zh-CN">全局工作空间、J-Lens, 以及模型内部的可读表征。</p></div><span class="blog-arrow" aria-hidden="true">↗</span></a></div>
+</section>
     <footer id="contact"><a class="footer-mark" href="assets/aperture/crest.png" aria-label="Family crest: leaves, sunrise, and sea"><span class="crest crest-full" aria-hidden="true"></span><span lang="zh-CN">千叶 · 旭海</span></a><div class="contact-main"><p class="eyebrow">LET'S TALK</p><h2>A conversation<br>starts with <em>hello.</em></h2><div class="contact-links"><a href="mailto:qyxh25@mails.tsinghua.edu.cn">Email</a><a href="https://github.com/tterumiimurett" target="_blank" rel="noopener noreferrer">GitHub</a></div></div><div class="footer-bottom"><span>Terumi Chiba · 2026</span><a href="#top">Back to top</a></div></footer>
   </main>
   <dialog id="project-dialog" aria-labelledby="detail-title"><button type="button" class="dialog-close" aria-label="Close project details">Close <span aria-hidden="true">×</span></button><div id="project-detail"></div></dialog>
