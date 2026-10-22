@@ -67,3 +67,7 @@ html,body.article-page{height:100%;overflow:hidden}
 @media(max-width:600px){.page-scroll{scroll-padding-top:24px}.article-tools{gap:14px;margin-top:20px}.listener-inline{margin-top:23px}.listener-inline .listener-transport{gap:7px}.listener-inline .listener-play{width:42px;height:42px;min-width:42px}.listener-inline .listener-previous,.listener-inline .listener-next{min-width:30px;width:30px}.listener-inline .listener-speed{min-width:47px;padding:0 8px;font-size:13px;margin-left:2px}.listener-inline .listener-voice{min-width:30px;width:30px}.listener-inline .listener-clock{font-size:9px;letter-spacing:0}.listener-inline .listener-close{width:20px;min-width:20px;margin-left:0}.listener-seek{margin-top:12px}.article-page:lang(en) .title-chinese{font-size:26px}.listener-dock.narrow{right:8px;width:calc(100vw - 16px)}.listener-dock.narrow .listener-clock{font-size:10px}.listener-dock.narrow.collapsed{width:220px}}
 @media(max-width:360px){.listener-inline .listener-transport{gap:5px}.listener-inline .listener-clock{font-size:8px}.listener-inline .listener-close{display:none}}
 @media(prefers-reduced-motion:reduce){.page-scroll{scroll-behavior:auto;transition:none}.listener-inline,.reader-waves i{animation:none!important}.listener-dock{transition:none;filter:none;transform:none}}
+
+/* Semantic heading restatements highlight the title words, preserving layout. */
+:is(h1,h2,h3,h4,h5,h6).reading-active{background:transparent!important;box-shadow:none}
+:is(h1,h2,h3,h4,h5,h6).reading-active .reading-word{background:#d8ebcc;box-shadow:0 0 0 2px #d8ebcc}

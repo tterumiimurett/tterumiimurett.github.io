@@ -4,6 +4,18 @@
   "source_sha256": "0af6148b88f7966e27b487f3ef6a3fd9c8f194408066571d2f6d2296de450e46",
   "blocks": [
     {
+      "id": "article-title",
+      "tag": "h1",
+      "read": true,
+      "parts": [
+        {
+          "text": "J-Space学习笔记"
+        }
+      ],
+      "emphasis": [],
+      "text": "J-Space学习笔记"
+    },
+    {
       "id": "b001",
       "tag": "p",
       "parts": [
@@ -25,7 +37,7 @@
       ],
       "text": "摘要",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b003",
@@ -49,7 +61,7 @@
       ],
       "text": "全局工作空间理论",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b005",
@@ -217,7 +229,7 @@
       ],
       "text": "大模型也存在全局工作空间 (J-Lens and J-Space)",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b018",
@@ -271,7 +283,7 @@
       ],
       "text": "J-lens 是看清舞台上的演员的放大镜",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b022",
@@ -499,7 +511,7 @@
       ],
       "text": "J lens 的使用方法",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b033",
@@ -511,7 +523,7 @@
       ],
       "text": "Readout",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b034",
@@ -661,7 +673,7 @@
       ],
       "text": "Sparse decomposition",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b041",
@@ -847,7 +859,7 @@
       ],
       "text": "Inception",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b049",
@@ -871,7 +883,7 @@
       ],
       "text": "Writing",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b051",
@@ -1063,7 +1075,7 @@
       ],
       "text": "J-Space",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b059",
@@ -1141,7 +1153,7 @@
       ],
       "text": "实验",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b064",
@@ -1387,7 +1399,7 @@
       ],
       "text": "批评",
       "emphasis": [],
-      "read": false
+      "read": true
     },
     {
       "id": "b083",

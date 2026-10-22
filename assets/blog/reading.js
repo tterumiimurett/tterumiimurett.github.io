@@ -42,6 +42,7 @@ let warmed=null, resumeOnReady=false;
 // Wrap only manuscript text, leaving KaTeX, links and the official exhibits intact.
 for (const block of blocks) {
   const id=block.dataset.readingId;
+  if(/^H[1-6]$/.test(block.tagName))targets.push({block:id,heading:true,element:block});
   const maths=[...block.querySelectorAll('.katex')];
   maths.forEach((math,index)=>{
     math.classList.add('reading-formula');
@@ -153,13 +154,17 @@ function bindTimings(data) {
     offset+=chunk.duration;
     const hits=new Map();
     for(const [blockId,at,start,end] of chunk.alignment) {
-      const target=byBlock.get(blockId)?.find(t=>at<0?t.formula===-at-1:t.formula===undefined && t.from<=at && t.to>at);
+      const target=byBlock.get(blockId)?.find(t=>at==='heading'?t.heading===true:at<0?t.formula===-at-1:t.formula===undefined && t.from<=at && t.to>at);
       if(!target) continue;
       if(!hits.has(target))hits.set(target,{target,start,end});
       else {const hit=hits.get(target);hit.start=Math.min(hit.start,start);hit.end=Math.max(hit.end,end);}
     }
     chunk.targets=[...hits.values()].sort((a,b)=>a.start-b.start);
     for(const cue of chunk.targets) if(!cue.target.cue)cue.target.cue={index,start:cue.start,end:cue.end,globalStart:chunk.offset+cue.start};
+    if(chunk.kind==='heading'){
+      const heading=byBlock.get(chunk.blocks[0])?.find(target=>target.heading);
+      if(heading)heading.cue={index,start:0,end:chunk.duration,globalStart:chunk.offset};
+    }
   });
   data.duration=offset;
   return data;
@@ -233,12 +238,13 @@ dock.querySelector('.listener-collapse').addEventListener('click',event=>{
 controls('.listener-close').forEach(button=>button.addEventListener('click',()=>{
   resumeOnReady=false;audio?.pause();panel.hidden=true;open.setAttribute('aria-expanded','false');document.body.classList.remove('listener-visible');updateDock();open.focus({preventScroll:true});
 }));
-document.querySelector('.post-body').addEventListener('click',async event=>{
+document.addEventListener('click',async event=>{
   if(event.target.closest('a') || panel.hidden)return;
   const element=event.target.closest('.reading-word,.reading-formula');
   if(!element || getSelection()?.toString())return;
   await ensureLoaded();
-  const target=targets.find(t=>t.element===element);
+  const heading=element.closest('h1,h2,h3,h4,h5,h6');
+  const target=heading?targets.find(t=>t.heading && t.element===heading):targets.find(t=>t.element===element);
   if(target?.cue){setChunk(target.cue.index,target.cue.start);highlight(target);await start();}
 });
 document.addEventListener('keydown',event=>{
