@@ -12,6 +12,7 @@
         }
       ],
       "text": "Over the past few days, I have been studying Anthropic's work, published this July, on visualizing a model's global workspace. I found it very inspiring, so I wanted to write down my understanding and thoughts.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -23,6 +24,7 @@
         }
       ],
       "text": "Abstract",
+      "emphasis": [],
       "read": false
     },
     {
@@ -34,6 +36,7 @@
         }
       ],
       "text": "This note uses a theater analogy to introduce the global workspace, leading into the central idea of Anthropic's article: how can we observe a large language model's \"global workspace\"? We will first look at how their tools for observing and intervening on intermediate representations, J-Lens and J-Space, work. Then we will see how the researchers use these tools and their experiments to argue that large language models may have a global workspace, and to explore some of its interesting properties. Finally, I will share some of my own thoughts and questions about the article.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -45,6 +48,7 @@
         }
       ],
       "text": "Global Workspace Theory",
+      "emphasis": [],
       "read": false
     },
     {
@@ -56,6 +60,7 @@
         }
       ],
       "text": "In 1988, one of the clouds hanging over cognitive science was this question: why can we consciously report some of our brain's activity, while remaining unaware of other activity? The invisible gorilla experiment (Simons, 1999) illustrates this very well. If you are unfamiliar with it, take a look at this video:",
+      "emphasis": [],
       "read": true
     },
     {
@@ -67,6 +72,7 @@
         }
       ],
       "text": "[Watch the gorilla experiment ↗](https://www.youtube.com/watch?v=vJG698U2Mvo&t=41s)",
+      "emphasis": [],
       "read": false
     },
     {
@@ -78,6 +84,7 @@
         }
       ],
       "text": "In the gorilla experiment, the visual input clearly includes the pixels of the gorilla, and these pixels are processed by the visual cortex. Yet they are not captured by awareness. The experiment gives us a simple demonstration that not every signal enters consciousness. So how does the brain process information? This was one of the puzzles facing cognitive science.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -89,6 +96,7 @@
         }
       ],
       "text": "To address this question, Bernard Baars proposed one possible explanation: Global Workspace Theory (GWT, Baars, 1988).",
+      "emphasis": [],
       "read": true
     },
     {
@@ -100,6 +108,13 @@
         }
       ],
       "text": "The theory gives us a vivid picture. The whole cognitive system is like a large theater, and the central stage is the global workspace. **The props and actors on this stage are the things we can consciously perceive.** Of course, this is a very unusual theater: it is a cognitive system, after all! The audience surrounding the stage corresponds to the brain circuits that specialize in different kinds of information processing.",
+      "emphasis": [
+        {
+          "start": 136,
+          "end": 214,
+          "source": "The props and actors on this stage are the things we can consciously perceive."
+        }
+      ],
       "read": true
     },
     {
@@ -111,6 +126,7 @@
         }
       ],
       "text": "Our brains constantly process information from the body: the smell of a pleasant fragrance, the touch of keys under our fingers, the sight of a leaf's texture, the sound of someone shouting by the road, or the subtle taste of tea. Various small circuits or functions process this information, which competes for a place on the stage.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -122,6 +138,7 @@
         }
       ],
       "text": "Imagine these circuits as skilled makeup artists preparing aspiring actors who run along the central avenue into the theater. Returning to the invisible gorilla experiment, some applicants never even get through the door, such as things outside the screen. Some look like natural stars, such as the players in white. There are also many supporting performers, such as the players in black, and others who enter the theater but never make it onto the stage, such as the gorilla.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -133,6 +150,7 @@
         }
       ],
       "text": "The makeup artists, our small brain processors, prepare the actors one by one. The applicants move through successive stages of this production line. By the time they reach the stage, they have gone from an unadorned appearance to smart suits and full makeup. If the stage selector thinks an actor stands out, they are allowed onstage. Those who are too inconspicuous may be turned away.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -144,6 +162,7 @@
         }
       ],
       "text": "The corresponding process might be visual information starting as a noisy input, becoming clearer through processing, and having its most eye-catching elements sent onto the stage first, entering awareness. Once onstage, these actors become objects that consciousness can observe and manipulate, through reasoning, translation, or rotation.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -155,6 +174,13 @@
         }
       ],
       "text": "What makes this a *global* workspace is **broadcasting**: once information enters the stage, multiple specialized processing systems around it can read and use it together. These systems handle not only external sensory input, but also memory, reasoning, decision-making, and language.",
+      "emphasis": [
+        {
+          "start": 38,
+          "end": 50,
+          "source": "broadcasting"
+        }
+      ],
       "read": true
     },
     {
@@ -166,6 +192,7 @@
         }
       ],
       "text": "For example, seeing dark clouds over a mountain might remind the memory system of getting caught in the rain, prompt the decision-making system to consider heading downhill, and let the language system form the sentence, \"It might rain.\" Reaching the stage therefore means both entering awareness and becoming available for flexible use by multiple systems.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -177,6 +204,7 @@
         }
       ],
       "text": "That is the global workspace: a stage for the concepts we can observe and manipulate in our conscious experience.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -188,6 +216,7 @@
         }
       ],
       "text": "A Global Workspace in Large Language Models? J-Lens and J-Space",
+      "emphasis": [],
       "read": false
     },
     {
@@ -199,6 +228,7 @@
         }
       ],
       "text": "The central idea of the J-Space article is that large language models may have something resembling a global workspace, or GW. How could we establish that such a workspace exists in a model? It would lie somewhere in the successive Transformer blocks, but how could we argue that these hard-to-interpret intermediate layers constitute a GW?",
+      "emphasis": [],
       "read": true
     },
     {
@@ -210,6 +240,7 @@
         }
       ],
       "text": "The article introduces two concepts: J-Lens and J-Space.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -221,6 +252,13 @@
         }
       ],
       "text": "J-Lens lets us examine the state of a model's GW at a particular moment. J-Space gives a mathematical definition of a state space formed by the representations this method can read. We can think of it as an **approximate, readable state space** of the GW. I will introduce them one by one.",
+      "emphasis": [
+        {
+          "start": 207,
+          "end": 240,
+          "source": "approximate, readable state space"
+        }
+      ],
       "read": true
     },
     {
@@ -232,6 +270,7 @@
         }
       ],
       "text": "J-Lens: a Magnifying Glass for the Actors on Stage",
+      "emphasis": [],
       "read": false
     },
     {
@@ -243,6 +282,7 @@
         }
       ],
       "text": "If we want to know whether a layer has workspace-like properties, we need a way to identify its actors. J-Lens is our tool for looking at them.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -254,6 +294,7 @@
         }
       ],
       "text": "J-Lens is defined as follows:",
+      "emphasis": [],
       "read": true
     },
     {
@@ -265,6 +306,7 @@
         }
       ],
       "text": "{{0}}",
+      "emphasis": [],
       "read": true
     },
     {
@@ -294,6 +336,7 @@
         }
       ],
       "text": "Here, {{0}} is the hidden state at layer {{1}} and sequence position {{2}} of the Transformer block.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -311,6 +354,13 @@
         }
       ],
       "text": "The formula may look intimidating, but its meaning is simple: **what influence does the Transformer block at layer {{0}} have on the future, on average?**",
+      "emphasis": [
+        {
+          "start": 62,
+          "end": 150,
+          "source": "what influence does the Transformer block at layer {{0}} have on the future, on average?"
+        }
+      ],
       "read": true
     },
     {
@@ -346,6 +396,7 @@
         }
       ],
       "text": "First, look inside the formula. {{0}} describes how a small change to the hidden state at layer {{1}}, position {{2}}, affects the final-layer hidden state at position {{3}}. This is what the arrows in the [Step 1 image](#jacobian-panel-1) represent: they connect one intermediate-layer position to different positions in the final layer.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -381,6 +432,7 @@
         }
       ],
       "text": "Now look at the outer {{0}} term. The expectation notation summarizes the aggregation of influences across different {{1}}, {{2}}, and prompts. In the actual calculation, we first sum a given position's influences on the current and subsequent positions, then average over source positions, and finally over prompts, obtaining {{3}}. This corresponds to the [Step 2 image](#jacobian-panel-2), where Jacobians calculated for different positions and prompts are brought together.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -398,6 +450,7 @@
         }
       ],
       "text": "So, taken together, it captures the average influence of layer {{0}} on the future.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -421,6 +474,7 @@
         }
       ],
       "text": "In practice, the researchers compute Jacobians for different source and target positions within a variety of prompts. Expanding the formula according to the actual aggregation procedure: first sum all influences from a given position {{0}} to the current and subsequent positions, then average over source positions {{1}}, and finally average over prompts.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -432,6 +486,7 @@
         }
       ],
       "text": "{{0}}",
+      "emphasis": [],
       "read": true
     },
     {
@@ -443,6 +498,7 @@
         }
       ],
       "text": "Using J-Lens",
+      "emphasis": [],
       "read": false
     },
     {
@@ -454,6 +510,7 @@
         }
       ],
       "text": "Readout",
+      "emphasis": [],
       "read": false
     },
     {
@@ -471,6 +528,7 @@
         }
       ],
       "text": "Of course, obtaining the matrix {{0}} alone does not directly give us a readable output.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -488,6 +546,7 @@
         }
       ],
       "text": "Take a hidden state at any layer and position, transform it with {{0}}, apply RMS normalization, multiply by the unembedding matrix, and finally apply softmax. This gives us a distribution over words. In a formula:",
+      "emphasis": [],
       "read": true
     },
     {
@@ -499,6 +558,7 @@
         }
       ],
       "text": "{{0}}",
+      "emphasis": [],
       "read": true
     },
     {
@@ -516,6 +576,7 @@
         }
       ],
       "text": "The highest-ranked words help us identify prominent concepts in the current hidden state that can be expressed in language. They reveal information about the actors at this layer and moment {{0}}; we can naturally treat the text sequence as a kind of time. In this way, J-Lens can inspect the actors at any layer and moment.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -527,6 +588,13 @@
         }
       ],
       "text": "There is one caveat here. **This word distribution cannot directly be treated as the probability that the model believes a particular claim; rather, we can intuitively think of it as how likely a word is to represent a concept, or actor, being considered in this layer's workspace.** That wording is not entirely precise, but it offers an intuitive way to think about it. For instance, reading out spider tells us that a spider-related concept is present. The model might be considering spider as the answer, ruling it out, or comparing spiders with ants. The word alone does not distinguish these possibilities. To understand what the actor is doing, we need the context and the intervention experiments that follow.",
+      "emphasis": [
+        {
+          "start": 26,
+          "end": 279,
+          "source": "This word distribution cannot directly be treated as the probability that the model believes a particular claim; rather, we can intuitively think of it as how likely a word is to represent a concept, or actor, being considered in this layer's workspace."
+        }
+      ],
       "read": true
     },
     {
@@ -580,6 +648,7 @@
         }
       ],
       "text": "In the paper's experiments with Claude Sonnet 4.5, J-Lens finds mostly sensory information from {{0}} to {{1}}, with very noisy readouts. From {{2}} to {{3}}, essentially every layer acts as a workspace, while from {{4}} to {{5}}, the readout becomes increasingly similar to the output. Here, {{6}} is a percentage of model depth; it does not mean Claude literally has 100 layers.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -591,6 +660,7 @@
         }
       ],
       "text": "Sparse Decomposition",
+      "emphasis": [],
       "read": false
     },
     {
@@ -602,6 +672,13 @@
         }
       ],
       "text": "Besides directly inspecting the readout, we can use sparse decomposition: approximately expressing the current hidden state as a nonnegative weighted sum of a small number of J-Lens vectors. **This reads and decomposes an existing activation; it does not change the model's state.**",
+      "emphasis": [
+        {
+          "start": 191,
+          "end": 278,
+          "source": "This reads and decomposes an existing activation; it does not change the model's state."
+        }
+      ],
       "read": true
     },
     {
@@ -613,6 +690,7 @@
         }
       ],
       "text": "The procedure is also straightforward:",
+      "emphasis": [],
       "read": true
     },
     {
@@ -624,6 +702,7 @@
         }
       ],
       "text": "{{0}}",
+      "emphasis": [],
       "read": true
     },
     {
@@ -677,6 +756,7 @@
         }
       ],
       "text": "Here, {{0}} is the J-Lens vector corresponding to row {{2}} of the matrix {{1}}. Using the convention that hidden states are column vectors, if {{3}} is the transpose of row {{5}} of the unembedding matrix {{4}}, then {{6}}.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -718,6 +798,7 @@
         }
       ],
       "text": "In other words, we pull an output token's readout direction back into the hidden-state space of layer {{0}}, rather than mapping it forward with {{1}}. We then choose at most {{2}} vectors {{3}} and find nonnegative weights that approximate {{4}} in Euclidean distance.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -741,6 +822,7 @@
         }
       ],
       "text": "We first obtain directions corresponding to vocabulary tokens, then jointly choose directions and weights to minimize reconstruction error. This is not simply selecting the {{0}} highest-scoring readout words, because the directions are not orthogonal. After decomposition, {{1}} describes the size of each contribution.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -752,6 +834,7 @@
         }
       ],
       "text": "But sparse decomposition has a larger use beyond readout: perturbing the model's state, or inception.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -763,6 +846,7 @@
         }
       ],
       "text": "Inception",
+      "emphasis": [],
       "read": false
     },
     {
@@ -774,6 +858,7 @@
         }
       ],
       "text": "J-Lens is more than a magnifying glass. Its vectors can also change a hidden state at a particular layer. I call this writing intervention Inception, after the film.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -785,6 +870,7 @@
         }
       ],
       "text": "Writing",
+      "emphasis": [],
       "read": false
     },
     {
@@ -802,6 +888,7 @@
         }
       ],
       "text": "There are two methods. The first directly selects the J-Lens vector for a target token, multiplies it by a strength coefficient, and adds it to {{0}}. This does not require sparse decomposition first.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -855,6 +942,7 @@
         }
       ],
       "text": "The second selects the J-Lens vectors for a source token {{0}} and target token {{1}}, placing them in the two columns of {{2}}. A pseudoinverse gives the coordinates of {{3}} in the space spanned by these vectors: {{4}}, where {{5}} is the pseudoinverse of {{6}}.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -878,6 +966,7 @@
         }
       ],
       "text": "Next, swap the two coordinates in {{0}}. Subtract the original component of {{1}} in this space and add back the component with swapped coordinates. In a formula:",
+      "emphasis": [],
       "read": true
     },
     {
@@ -889,6 +978,7 @@
         }
       ],
       "text": "{{0}}",
+      "emphasis": [],
       "read": true
     },
     {
@@ -936,6 +1026,7 @@
         }
       ],
       "text": "Here, {{0}} swaps the two coordinates. To adjust intervention strength, we can also multiply the difference {{1}} by a coefficient {{2}}. The part of {{3}} perpendicular to {{4}} remains unchanged. Neither vector has to appear in the sparse decomposition of {{5}}.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -947,6 +1038,7 @@
         }
       ],
       "text": "Notice that this does not exactly coincide with readout.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -958,6 +1050,7 @@
         }
       ],
       "text": "In the actual injection or swap, the operation is applied at every position in the layer.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -969,6 +1062,7 @@
         }
       ],
       "text": "J-Space",
+      "emphasis": [],
       "read": false
     },
     {
@@ -998,6 +1092,7 @@
         }
       ],
       "text": "J-Space is essentially the search space for sparse decomposition, given a set of J-Lens vectors and sparsity {{0}}. When doing sparse decomposition, we look for a point in J-Space that is as close as possible to {{1}} in Euclidean distance. Each point is a nonnegative combination of at most {{2}} word directions, corresponding to a candidate combination of actors.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1009,6 +1104,7 @@
         }
       ],
       "text": "In other words, J-Space is an approximate, readable state space for the stage at a given layer. These candidate combinations of actors are not guaranteed to cover everything in the model's workspace, and not every combination is necessarily a state the model will actually reach.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1020,6 +1116,7 @@
         }
       ],
       "text": "{{0}}",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1031,6 +1128,7 @@
         }
       ],
       "text": "We might imagine the shape of this set as follows:",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1042,6 +1140,7 @@
         }
       ],
       "text": "Experiments",
+      "emphasis": [],
       "read": false
     },
     {
@@ -1053,6 +1152,7 @@
         }
       ],
       "text": "We have now introduced the article's basic tools and principles. What remains is to see which experiments support the possibility that the model really has a global workspace.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1064,6 +1164,7 @@
         }
       ],
       "text": "I think four experiments are especially worth introducing.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1075,6 +1176,7 @@
         }
       ],
       "text": "The first experiment tests whether these layers really have workspace-like functions.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1086,6 +1188,7 @@
         }
       ],
       "text": "The model's prompt says, \"I can inject a thought into your mind. What do you think it is?\" It is then required to begin its answer with: \"I do detect it. The thought is:\"",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1097,6 +1200,7 @@
         }
       ],
       "text": "At layer 88, the readout is elephant, and the final prediction is also elephant. When the writing method injects lightning into the model, its next-token prediction changes to lightning.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1108,6 +1212,7 @@
         }
       ],
       "text": "I would have liked the article to show more of what other layers are thinking about here, to help us understand what is happening elsewhere in the model.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1119,6 +1224,7 @@
         }
       ],
       "text": "The researchers also ask the model to write about one thing while thinking about something else.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1130,6 +1236,7 @@
         }
       ],
       "text": "The second experiment shows that J-Space participates in reasoning. In one example, the model is asked how many legs a web-spinning animal has. Spider appears in J-Space, and the model initially answers 8.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1141,6 +1248,13 @@
         }
       ],
       "text": "Using the swapping method described earlier, the researchers exchange the activation's coordinates along the spider and ant J-Lens directions in an intermediate layer. The model then answers 6. We are therefore doing more than observing the word spider: changing this intermediate representation also changes the final answer, indicating a **causal role in the reasoning result**.",
+      "emphasis": [
+        {
+          "start": 340,
+          "end": 375,
+          "source": "causal role in the reasoning result"
+        }
+      ],
       "read": true
     },
     {
@@ -1152,6 +1266,7 @@
         }
       ],
       "text": "The third experiment demonstrates generalization of concepts in J-Space. In separate questions about France's capital, language, and continent, the researchers swap the coordinates along the France and China J-Lens vectors in an intermediate layer. They use exactly the same swap for the different questions.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1163,6 +1278,13 @@
         }
       ],
       "text": "In this example, the answers shift to China's capital, language, and continent. The key is that **the same substituted concept can be used by different downstream computations**, rather than merely reading out different words for different questions. In larger-scale tests, these swaps do not succeed every time.",
+      "emphasis": [
+        {
+          "start": 96,
+          "end": 173,
+          "source": "the same substituted concept can be used by different downstream computations"
+        }
+      ],
       "read": true
     },
     {
@@ -1174,6 +1296,7 @@
         }
       ],
       "text": "The fourth experiment examines selectivity in J-Space. We have seen that changing the actors on stage can change an answer. Now we ask whether every use of the same information must pass through this stage. The researchers give the model a Spanish passage, then swap the coordinates along the Spanish and French J-Lens directions at the question's token positions.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1185,6 +1308,7 @@
         }
       ],
       "text": "Asked which language the passage is in, the model changes its answer from Spanish to French. Asked to name a famous author who writes in that language, it also shifts to a French author.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1196,6 +1320,7 @@
         }
       ],
       "text": "But asked to continue the passage, it still writes Spanish. If a French sentence is inserted into the passage and the model is asked to check for a language switch, it can still detect the anomaly.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1207,6 +1332,7 @@
         }
       ],
       "text": "Across these tasks, the actor in J-Space affects answers when the model reports the language or uses it to name an author. Continuing the text and detecting an inserted language still work normally after the same swap.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1218,6 +1344,13 @@
         }
       ],
       "text": "This suggests that even when the same concept appears in the readout, **different tasks do not necessarily use its J-Space representation**. That is the selectivity at issue here, and it helps reveal a functional difference between the stage and other processing. Interested readers can see [Figure 20](https://transformer-circuits.pub/2026/workspace/index.html) in the original article.",
+      "emphasis": [
+        {
+          "start": 70,
+          "end": 135,
+          "source": "different tasks do not necessarily use its J-Space representation"
+        }
+      ],
       "read": true
     },
     {
@@ -1229,6 +1362,7 @@
         }
       ],
       "text": "The article contains many other interesting experiments: showing that J-Space vectors are more sensitive to writing interventions, observing the model thinking about one thing while writing another, and watching reasoning evolve in the workspace during calculations. I highly recommend reading the original.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1240,6 +1374,7 @@
         }
       ],
       "text": "This note is mainly a reading guide.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1251,6 +1386,7 @@
         }
       ],
       "text": "Questions and Criticisms",
+      "emphasis": [],
       "read": false
     },
     {
@@ -1262,6 +1398,7 @@
         }
       ],
       "text": "My main questions about this method concern J-Space.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1273,6 +1410,13 @@
         }
       ],
       "text": "First, we should distinguish two possible forms of non-uniqueness. The J-Lens vectors form an overcomplete dictionary, so the same vector may admit several coefficient sets. Meanwhile, J-Space under a sparsity constraint is generally nonconvex, so a given hidden state may also have more than one nearest point. These are different issues, and nonconvexity alone does not imply that every hidden state has multiple optimal decompositions. What concerns me more is **whether the sparse decomposition of the same hidden state is stable**.",
+      "emphasis": [
+        {
+          "start": 464,
+          "end": 531,
+          "source": "whether the sparse decomposition of the same hidden state is stable"
+        }
+      ],
       "read": true
     },
     {
@@ -1296,6 +1440,7 @@
         }
       ],
       "text": "Second, sparse decomposition requires us to choose not only a set of word directions but also nonnegative weights {{0}}. Mathematically, {{1}} is simply a reconstruction weight. What gives me pause is that we can change both the words and their weights, opening up more possible choices.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1307,6 +1452,7 @@
         }
       ],
       "text": "When some word directions are already close together, a different combination of words and weights might approximate the hidden state almost equally well.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1324,6 +1470,7 @@
         }
       ],
       "text": "So I care about how stable the final set of words is. If we use a different solver or perturb the hidden state slightly, do we get another set of words, with large changes even in the contribution sizes represented by {{0}}?",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1335,6 +1482,7 @@
         }
       ],
       "text": "Of course, more choices do not necessarily mean multiple solutions. But a small reconstruction error alone does not answer these stability questions.",
+      "emphasis": [],
       "read": true
     },
     {
@@ -1346,6 +1494,7 @@
         }
       ],
       "text": "Simons, D. J., & Chabris, C. F. (1999). Gorillas in our midst: Sustained inattentional blindness for dynamic events. Perception, 28(9), 1059–1074.",
+      "emphasis": [],
       "read": false
     }
   ]
