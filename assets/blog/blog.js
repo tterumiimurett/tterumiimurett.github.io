@@ -1,14 +1,15 @@
 const progress = document.querySelector('.reading-progress span');
 const article = document.querySelector('.post-body');
+const scrollRoot = document.querySelector('.page-scroll') || window;
 let framePending = false;
 function updateProgress() {
   const start = article.offsetTop;
-  const end = start + article.offsetHeight - window.innerHeight;
-  const fraction = Math.max(0, Math.min(1, (window.scrollY - start) / Math.max(1, end - start)));
+  const end = start + article.offsetHeight - (scrollRoot.clientHeight || window.innerHeight);
+  const fraction = Math.max(0, Math.min(1, ((scrollRoot.scrollTop ?? window.scrollY) - start) / Math.max(1, end - start)));
   progress.style.transform = `scaleX(${fraction})`;
   framePending = false;
 }
-window.addEventListener('scroll', () => {
+scrollRoot.addEventListener('scroll', () => {
   if (!framePending) { framePending = true; requestAnimationFrame(updateProgress); }
 }, { passive:true });
 window.addEventListener('resize', updateProgress);
@@ -18,7 +19,7 @@ const sections = links.map(link => document.getElementById(link.hash.slice(1))).
 const observer = new IntersectionObserver(entries => {
   const visible = entries.filter(entry => entry.isIntersecting).sort((a,b) => a.boundingClientRect.top - b.boundingClientRect.top);
   if (visible.length) links.forEach(link => link.classList.toggle('active', link.hash === `#${visible[0].target.id}`));
-}, { rootMargin:'-5% 0px -68% 0px' });
+}, { root:scrollRoot===window?null:scrollRoot, rootMargin:'-5% 0px -68% 0px' });
 sections.forEach(section => observer.observe(section));
 document.querySelectorAll('.mobile-toc a').forEach(link => link.addEventListener('click', () => {
   document.querySelector('.mobile-toc').open = false;
@@ -26,8 +27,12 @@ document.querySelectorAll('.mobile-toc a').forEach(link => link.addEventListener
 
 const stepper = document.querySelector('.figure-steps');
 if (stepper) {
+  const english = document.documentElement.lang === 'en';
   const tabs = [...stepper.querySelectorAll('[role="tab"]')];
-  const descriptions = [
+  const descriptions = english ? [
+    'First, see how a change at one position affects the current and later positions.',
+    'Then sum over target positions, average over source positions, and finally average over prompts.'
+  ] : [
     '先看一个给定位置的变化, 如何影响当前位置及后续位置。',
     '再累加目标位置的影响, 对源位置和 prompt 依次求平均。'
   ];
@@ -40,7 +45,7 @@ if (stepper) {
       document.getElementById(tab.getAttribute('aria-controls')).hidden = i !== currentStep;
     });
     stepper.querySelector('.step-description').textContent = descriptions[currentStep];
-    stepper.querySelector('.step-next').innerHTML = currentStep ? '回到第一步 <span aria-hidden="true">↶</span>' : '下一步 <span aria-hidden="true">→</span>';
+    stepper.querySelector('.step-next').innerHTML = currentStep ? `${english ? 'Back to Step 1' : '回到第一步'} <span aria-hidden="true">↶</span>` : `${english ? 'Next step' : '下一步'} <span aria-hidden="true">→</span>`;
     if (focus) tabs[currentStep].focus({ preventScroll:true });
   }
   tabs.forEach((tab,index) => {
