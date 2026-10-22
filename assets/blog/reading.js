@@ -1,4 +1,4 @@
-import {voiceIcon} from './voice-icons-v1.js';
+import {voiceIcon} from './voice-icons-v2.js';
 const panel = document.querySelector('.article-listener');
 const dock = document.querySelector('.listener-dock');
 const viewport = document.querySelector('.page-scroll');
@@ -193,8 +193,9 @@ function ensureLoaded(){ if(loading)return loading;if(manifest)return Promise.re
 function show() {panel.hidden=false;open.setAttribute('aria-expanded','true');document.body.classList.add('listener-visible');panel.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});updateDock();return ensureLoaded();}
 open.addEventListener('click',()=>{show();});
 plays.forEach(button=>button.addEventListener('click',async()=>{await ensureLoaded(); if(audio && !audio.paused)audio.pause();else start();}));
-const iconVariant=new URLSearchParams(location.search).get('voice-icons')==='organic'?'organic':'rounded';
-voice.innerHTML=voiceIcon('male',iconVariant);
+const requestedIcons=new URLSearchParams(location.search).get('voice-icons');
+const iconVariant=['organic','rounded'].includes(requestedIcons)?requestedIcons:'hybrid';
+voice.innerHTML=voiceIcon('female',iconVariant);
 voice.addEventListener('click',()=>{
   voice.value=voice.value==='liufei'?'xiaohe':'liufei';
   const male=voice.value==='liufei';
